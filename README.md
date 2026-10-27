@@ -17,7 +17,8 @@ Di pgAdmin: pilih database > Tools > Query Tool > buka `database/schema.sql` > E
 
 ## 4. Konfigurasi koneksi
 Salin `.env.example` menjadi `.env`, lalu isi password PostgreSQL lokal pada `DB_PASSWORD`. Contoh:
-```
+
+```env
 PORT=3001
 DB_HOST=localhost
 DB_PORT=5432
@@ -25,14 +26,17 @@ DB_NAME=sikrs_dev
 DB_USER=postgres
 DB_PASSWORD=password_postgres_kamu
 ```
+
 Jangan mengunggah `.env` ke GitHub.
 
 ## 5. Jalankan
 Buka terminal di folder proyek yang berisi `package.json`, jalankan:
-```
+
+```bash
 npm install
 npm start
 ```
+
 Buka `http://localhost:3001`. Port 3001 sengaja digunakan agar tidak bentrok dengan aplikasi lama di port 3000.
 
 ## Modul CRUD
