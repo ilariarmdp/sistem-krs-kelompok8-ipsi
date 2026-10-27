@@ -1,8 +1,192 @@
-<!doctype html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SIKRS • Sistem Informasi KRS</title><link rel="stylesheet" href="/style.css"></head>
-<body><aside class="sidebar"><div class="brand"><div class="brand-mark">S</div><div><b>SIKRS</b><small>Academic Management</small></div></div><div class="nav-label">MENU UTAMA</div><button class="nav active" data-page="dashboard">▦ <span>Dashboard</span></button><div class="nav-label">DATA AKADEMIK</div><div id="nav-data"></div><div class="sidebar-foot"><span class="pulse"></span> PostgreSQL connection <b id="conn">Memeriksa…</b></div></aside>
-<main class="main"><header><div><div class="eyebrow">SISTEM INFORMASI AKADEMIK</div><h1 id="page-title">Dashboard</h1><p id="page-subtitle">Ringkasan data dan pengelolaan akademik.</p></div><div class="header-right"><span class="today" id="today"></span><div class="avatar">AD</div></div></header>
-<section id="dashboard" class="page"><div class="welcome"><div><span class="welcome-tag">ADMINISTRATOR</span><h2>Selamat datang di SI-KRS</h2><p>Kelola data akademik dengan terstruktur, konsisten, dan terhubung ke PostgreSQL.</p></div><div class="welcome-icon">▤</div></div><div id="stats" class="stats"></div><div class="panel"><div class="panel-head"><div><h3>Modul sistem</h3><p>Pilih modul untuk melihat, menambah, mengubah, atau menghapus data.</p></div></div><div id="module-cards" class="module-grid"></div></div></section>
-<section id="table-page" class="page hidden"><div class="panel"><div class="toolbar"><div><h3 id="table-heading">Data</h3><p id="table-desc">Kelola data di database.</p></div><div class="actions"><input id="search" placeholder="Cari data..." aria-label="Cari data"><button class="btn primary" id="add">＋ Tambah data</button></div></div><div id="notice" class="notice hidden"></div><div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div><div class="table-bottom"><span id="row-count">0 data</span><span>Data langsung tersimpan ke PostgreSQL</span></div></div></section>
-<footer>SIKRS · Sistem Informasi Kartu Rencana Studi <span>PostgreSQL · Relational Database</span></footer></main>
-<div id="modal" class="modal hidden"><div class="modal-card"><div class="modal-head"><div><div class="eyebrow">FORM DATA AKADEMIK</div><h2 id="modal-title">Tambah data</h2></div><button class="icon-btn" id="close">×</button></div><form id="record-form"><div id="form-fields" class="form-grid"></div><div class="form-actions"><button type="button" class="btn ghost" id="cancel">Batal</button><button type="submit" class="btn primary">Simpan data</button></div></form></div></div><div id="toast" class="toast"></div><script src="/app.js"></script></body></html>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>SIKRS | Sistem Informasi KRS</title>
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+
+      <div>
+        <b>SIKRS</b>
+        <small>Academic Management</small>
+      </div>
+    </div>
+
+    <div class="nav-label">MENU UTAMA</div>
+
+    <button class="nav active" data-page="dashboard">
+      ▦ <span>Dashboard</span>
+    </button>
+
+    <div class="nav-label">DATA AKADEMIK</div>
+
+    <div id="nav-data"></div>
+
+    <div class="sidebar-foot">
+      <span class="pulse"></span>
+      Penyimpanan sementara
+      <b id="conn">Memeriksa…</b>
+    </div>
+  </aside>
+
+  <!-- Konten utama -->
+  <main class="main">
+    <header>
+      <div>
+        <div class="eyebrow">SISTEM INFORMASI AKADEMIK</div>
+
+        <h1 id="page-title">Dashboard</h1>
+
+        <p id="page-subtitle">
+          Ringkasan data dan pengelolaan akademik.
+        </p>
+      </div>
+
+      <div class="header-right">
+        <span class="today" id="today"></span>
+        <div class="avatar">AD</div>
+      </div>
+    </header>
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="page">
+      <div class="welcome">
+        <div>
+          <span class="welcome-tag">ADMINISTRATOR</span>
+
+          <h2>Selamat datang di SI-KRS</h2>
+
+          <p>
+            Kelola data akademik secara terstruktur
+            sesuai relasi dan aturan ERD.
+          </p>
+        </div>
+
+        <div class="welcome-icon">▤</div>
+      </div>
+
+      <div id="stats" class="stats"></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Modul sistem</h3>
+
+            <p>
+              Pilih modul untuk melihat, menambah,
+              mengubah, atau menghapus data.
+            </p>
+          </div>
+        </div>
+
+        <div id="module-cards" class="module-grid"></div>
+      </div>
+    </section>
+
+    <!-- Halaman CRUD -->
+    <section id="table-page" class="page hidden">
+      <div class="panel">
+        <div class="toolbar">
+          <div>
+            <h3 id="table-heading">Data</h3>
+
+            <p id="table-desc">
+              Kelola data akademik sesuai struktur ERD.
+            </p>
+          </div>
+
+          <div class="actions">
+            <input
+              id="search"
+              type="search"
+              placeholder="Cari data..."
+              aria-label="Cari data"
+            >
+
+            <button class="btn primary" id="add" type="button">
+              ＋ Tambah data
+            </button>
+          </div>
+        </div>
+
+        <div id="notice" class="notice hidden"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead id="thead"></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="table-bottom">
+          <span id="row-count">0 data</span>
+
+          <span>
+            Data bersifat sementara selama server berjalan.
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <span>SIKRS · Sistem Informasi Kartu Rencana Studi</span>
+      <span>Simulasi CRUD · Tanpa database</span>
+    </footer>
+  </main>
+
+  <!-- Modal formulir -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow">FORM DATA AKADEMIK</div>
+          <h2 id="modal-title">Tambah data</h2>
+        </div>
+
+        <button
+          class="icon-btn"
+          id="close"
+          type="button"
+          aria-label="Tutup formulir"
+        >
+          ×
+        </button>
+      </div>
+
+      <form id="record-form">
+        <div id="form-fields" class="form-grid"></div>
+
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn ghost"
+            id="cancel"
+          >
+            Batal
+          </button>
+
+          <button type="submit" class="btn primary">
+            Simpan data
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notifikasi -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
