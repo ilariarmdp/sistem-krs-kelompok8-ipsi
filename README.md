@@ -1,57 +1,78 @@
-# SI-KRS Profesional
+# SI-KRS — Sistem Informasi Kartu Rencana Studi
 
-Aplikasi web CRUD Sistem Informasi Kartu Rencana Studi dengan Node.js, Express, dan PostgreSQL. Struktur tabel mengikuti file ERD yang diberikan: `prodi`, `dosen`, `mahasiswa`, `mata_kuliah`, `periode`, `kelas`, `krs`, `krs_detail`, `aturan_akademik`.
+## 1. Deskripsi Proyek
 
-## 1. Persiapan
-- PostgreSQL Server harus aktif.
-- Node.js versi LTS harus terpasang.
-- Jangan menghapus atau menimpa folder PostgreSQL lama.
+SI-KRS adalah aplikasi web sederhana untuk mengelola data akademik dan transaksi Kartu Rencana Studi (KRS) mahasiswa. Aplikasi ini dibuat untuk menerapkan alur transaksi KRS yang mengikuti rancangan UML.
 
-## 2. Buka proyek di VS Code
-Ekstrak ZIP ke folder baru, misalnya `D:\\SIKRS-PROFESIONAL`. Buka folder tersebut di VS Code.
+Pada tugas ini, aplikasi menggunakan data sementara di memori dan tidak memerlukan koneksi database.
 
-## 3. Siapkan database
-Buka pgAdmin 4, konek ke server PostgreSQL, lalu pilih database target. Bila ingin memakai database yang sudah ada, pastikan isinya dulu. `database/schema.sql` menggunakan `CREATE TABLE IF NOT EXISTS` dan tidak menghapus data, tetapi nama tabel yang sudah ada bisa saja punya struktur berbeda. Untuk pengujian paling aman, buat database baru bernama `sikrs_dev`, lalu jalankan `database/schema.sql` pada database tersebut. Jika wajib menggunakan `krs_dev`, buat backup terlebih dahulu dan pastikan skema lama cocok.
+## 2. Tujuan
 
-Di pgAdmin: pilih database > Tools > Query Tool > buka `database/schema.sql` > Execute.
+1. Menerapkan rancangan sistem ke dalam aplikasi web.
+2. Mengelola data akademik melalui fitur CRUD.
+3. Menerapkan alur transaksi KRS mahasiswa.
+4. Memvalidasi pengajuan KRS berdasarkan aturan akademik.
 
-## 4. Konfigurasi koneksi
-Salin `.env.example` menjadi `.env`, lalu isi password PostgreSQL lokal pada `DB_PASSWORD`. Contoh:
+## 3. Teknologi
 
-```env
-PORT=3001
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=sikrs_dev
-DB_USER=postgres
-DB_PASSWORD=password_postgres_kamu
-```
+- Node.js
+- Express.js
+- HTML, CSS, dan JavaScript
+- Penyimpanan data sementara di memori (_in-memory_)
 
-Jangan mengunggah `.env` ke GitHub.
+## 4. Persiapan dan Cara Menjalankan
 
-## 5. Jalankan
-Buka terminal di folder proyek yang berisi `package.json`, jalankan:
+Pastikan Node.js sudah terpasang di komputer.
+
+Buka terminal pada folder proyek yang berisi `package.json`, kemudian jalankan:
 
 ```bash
 npm install
 npm start
 ```
 
-Buka `http://localhost:3001`. Port 3001 sengaja digunakan agar tidak bentrok dengan aplikasi lama di port 3000.
+Setelah server berjalan, buka alamat berikut di browser:
 
-## Modul CRUD
-- Program Studi
-- Dosen
-- Mahasiswa
-- Mata Kuliah
-- Periode Akademik
-- Kelas Kuliah
-- KRS Mahasiswa
-- Detail KRS
-- Aturan Akademik
+`http://localhost:3001`
 
-## Catatan penting
-- Aplikasi ini merupakan fondasi CRUD akademik yang terkoneksi langsung ke PostgreSQL; ini bukan lagi demo “transaksi tanpa database”.
-- Foreign key dan aturan utama mengikuti ERD, dengan validasi tambahan untuk jenjang, status, SKS, kuota, rentang tanggal, dan nilai.
-- Pengajuan KRS otomatis, pemeriksaan batas SKS, autentikasi/login, role, audit trail, dan cetak KRS belum diimplementasikan.
-- Selalu buat backup sebelum mengubah database yang berisi data penting.
+Aplikasi berjalan tanpa konfigurasi PostgreSQL.
+
+## 5. Modul Aplikasi
+
+Aplikasi menyediakan pengelolaan data untuk:
+
+1. Program Studi
+2. Dosen
+3. Mahasiswa
+4. Mata Kuliah
+5. Periode Akademik
+6. Kelas Kuliah
+7. KRS Mahasiswa
+8. Detail KRS
+9. Aturan Akademik
+
+## 6. Alur Transaksi KRS
+
+1. KRS mahasiswa dibuat dengan status awal `draft`.
+2. Mahasiswa dapat menambahkan kelas ke Detail KRS selama KRS masih berstatus `draft`.
+3. Sistem memeriksa kesesuaian periode kelas dengan periode KRS.
+4. Sistem menghitung total SKS berdasarkan mata kuliah yang diambil.
+5. Pengajuan KRS ditolak jika tidak memiliki detail kelas atau jika total SKS melebihi batas maksimal yang ditetapkan.
+6. Jika validasi berhasil, status KRS berubah menjadi `diajukan`.
+7. Detail KRS dan data KRS yang sudah diajukan atau diproses tidak dapat diubah melalui fitur yang tersedia.
+
+## 7. Aturan Akademik
+
+Batas maksimal SKS menggunakan aturan `MAX_SKS`. Data awal aplikasi menetapkan batas maksimal sebesar 24 SKS per semester.
+
+## 8. Catatan Penyimpanan Data
+
+Aplikasi menggunakan data contoh yang disimpan sementara di memori. Data yang dibuat atau diubah selama aplikasi berjalan tidak dijamin tetap tersedia setelah server dimulai ulang.
+
+Aplikasi ini tidak menggunakan database pada pelaksanaan tugas ini.
+
+## 9. Pengujian
+
+Pengujian dilakukan melalui browser dengan memeriksa fitur CRUD dan alur transaksi KRS, termasuk penambahan Detail KRS, penolakan data duplikat, pengajuan KRS, dan pembatasan perubahan setelah KRS diajukan.
+
+Hasil pengujian aktual dicatat berdasarkan perilaku aplikasi yang diamati.
