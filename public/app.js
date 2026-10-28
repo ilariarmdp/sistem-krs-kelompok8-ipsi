@@ -158,15 +158,20 @@ async function dashboard() {
       `)
       .join('');
 
-    $('#module-cards').innerHTML = Object.entries(meta)
-      .map(([table, definition]) => `
-        <button class="module-card" data-module="${esc(table)}">
-          <span class="mi">${icons[table] || '◦'}</span>
-          <b>${esc(definition.label)}</b>
-          <small>${stats[table] ?? 0} record · Kelola data →</small>
-        </button>
-      `)
-      .join('');
+
+    const moduleCards = $('#module-cards');
+
+    if (moduleCards) {
+      moduleCards.innerHTML = Object.entries(meta)
+        .map(([table, definition]) => `
+          <button class="module-card" data-module="${esc(table)}">
+            <span class="mi">${icons[table] || '◦'}</span>
+            <b>${esc(definition.label)}</b>
+            <small>${stats[table] ?? 0} record · Kelola data →</small>
+          </button>
+        `)
+        .join('');
+    }
   } catch (error) {
     $('#stats').innerHTML = `
       <div class="notice">

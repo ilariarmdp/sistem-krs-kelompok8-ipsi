@@ -117,75 +117,75 @@ const tables = {
   }
 };
 
-// ==================================================
-// DATA CONTOH SEMENTARA
-// ==================================================
 
 const data = {
   prodi: [
-    { kode_prodi: 'SI', nama_prodi: 'Sistem Informasi', jenjang: 'S1' }
+    { kode_prodi: 'SI', nama_prodi: 'Sistem Informasi', jenjang: 'S1' },
+    { kode_prodi: 'IF', nama_prodi: 'Informatika', jenjang: 'S1' },
+    { kode_prodi: 'TI', nama_prodi: 'Teknik Industri', jenjang: 'S1' },
+    { kode_prodi: 'MI', nama_prodi: 'Manajemen Informatika', jenjang: 'D3' },
+    { kode_prodi: 'KA', nama_prodi: 'Komputerisasi Akuntansi', jenjang: 'D3' }
   ],
 
   dosen: [
-    {
-      id_dosen: 1,
-      nidn: '0012345678',
-      nama: 'Budi Santoso',
-      email: 'budi@example.com',
-      kode_prodi: 'SI'
-    }
+    { id_dosen: 1, nidn: '0012345678', nama: 'Budi Santoso', email: 'budi@example.com', kode_prodi: 'SI' },
+    { id_dosen: 2, nidn: '0012345679', nama: 'Siti Rahmawati', email: 'siti@example.com', kode_prodi: 'SI' },
+    { id_dosen: 3, nidn: '0012345680', nama: 'Agus Setiawan', email: 'agus@example.com', kode_prodi: 'IF' },
+    { id_dosen: 4, nidn: '0012345681', nama: 'Dewi Lestari', email: 'dewi@example.com', kode_prodi: 'TI' },
+    { id_dosen: 5, nidn: '0012345682', nama: 'Rina Kurnia', email: 'rina@example.com', kode_prodi: 'MI' }
   ],
 
   mahasiswa: [
-    {
-      nim: '2301001',
-      nama: 'Andi Saputra',
-      email: 'andi@example.com',
-      tahun_masuk: 2023,
-      status: 'aktif',
-      kode_prodi: 'SI',
-      id_dosen_pa: 1,
-      created_at: '2026-10-27',
-      no_hp: '081234567890'
-    }
+    { nim: '2301001', nama: 'Andi Saputra', email: 'andi@example.com', tahun_masuk: 2023, status: 'aktif', kode_prodi: 'SI', id_dosen_pa: 1, created_at: '2026-10-27', no_hp: '081234567890' },
+    { nim: '2301002', nama: 'Rina Putri', email: 'rina.putri@example.com', tahun_masuk: 2023, status: 'aktif', kode_prodi: 'SI', id_dosen_pa: 2, created_at: '2026-10-27', no_hp: '081234567891' },
+    { nim: '2301003', nama: 'Dimas Pratama', email: 'dimas@example.com', tahun_masuk: 2023, status: 'aktif', kode_prodi: 'IF', id_dosen_pa: 3, created_at: '2026-10-27', no_hp: '081234567892' },
+    { nim: '2401001', nama: 'Nadia Safitri', email: 'nadia@example.com', tahun_masuk: 2024, status: 'aktif', kode_prodi: 'TI', id_dosen_pa: 4, created_at: '2026-10-27', no_hp: '081234567893' },
+    { nim: '2401002', nama: 'Fajar Ramadhan', email: 'fajar@example.com', tahun_masuk: 2024, status: 'aktif', kode_prodi: 'MI', id_dosen_pa: 5, created_at: '2026-10-27', no_hp: '081234567894' }
   ],
 
   mata_kuliah: [
     { kode_mk: 'SI301', nama_mk: 'Analisis Sistem Informasi', sks: 3, semester_ke: 5 },
-    { kode_mk: 'SI302', nama_mk: 'Manajemen Basis Data', sks: 3, semester_ke: 5 }
+    { kode_mk: 'SI302', nama_mk: 'Manajemen Basis Data', sks: 3, semester_ke: 5 },
+    { kode_mk: 'SI303', nama_mk: 'Rekayasa Perangkat Lunak', sks: 3, semester_ke: 5 },
+    { kode_mk: 'SI304', nama_mk: 'Manajemen Proyek TI', sks: 2, semester_ke: 5 },
+    { kode_mk: 'SI305', nama_mk: 'Keamanan Sistem Informasi', sks: 3, semester_ke: 5 }
   ],
 
   periode: [
-    {
-      id_periode: '2026G',
-      nama_periode: 'Ganjil 2026/2027',
-      tgl_mulai: '2026-08-01',
-      tgl_selesai: '2027-01-31'
-    }
+    { id_periode: '2025G', nama_periode: 'Ganjil 2025/2026', tgl_mulai: '2025-08-01', tgl_selesai: '2026-01-31' },
+    { id_periode: '2025E', nama_periode: 'Genap 2025/2026', tgl_mulai: '2026-02-01', tgl_selesai: '2026-07-31' },
+    { id_periode: '2026G', nama_periode: 'Ganjil 2026/2027', tgl_mulai: '2026-08-01', tgl_selesai: '2027-01-31' },
+    { id_periode: '2026E', nama_periode: 'Genap 2026/2027', tgl_mulai: '2027-02-01', tgl_selesai: '2027-07-31' },
+    { id_periode: '2027G', nama_periode: 'Ganjil 2027/2028', tgl_mulai: '2027-08-01', tgl_selesai: '2028-01-31' }
   ],
 
   kelas: [
     { id_kelas: 1, kode_mk: 'SI301', id_periode: '2026G', id_dosen: 1, nama_kelas: 'A', kuota: 30 },
-    { id_kelas: 2, kode_mk: 'SI302', id_periode: '2026G', id_dosen: 1, nama_kelas: 'A', kuota: 30 }
+    { id_kelas: 2, kode_mk: 'SI302', id_periode: '2026G', id_dosen: 2, nama_kelas: 'A', kuota: 30 },
+    { id_kelas: 3, kode_mk: 'SI303', id_periode: '2026G', id_dosen: 3, nama_kelas: 'A', kuota: 30 },
+    { id_kelas: 4, kode_mk: 'SI304', id_periode: '2026G', id_dosen: 4, nama_kelas: 'A', kuota: 25 },
+    { id_kelas: 5, kode_mk: 'SI305', id_periode: '2026G', id_dosen: 5, nama_kelas: 'A', kuota: 25 }
   ],
 
   krs: [
-    { id_krs: 1, nim: '2301001', id_periode: '2026G', tgl_isi: '2026-10-27', status: 'draft' }
   ],
 
   krs_detail: [
-    { id_krs: 1, id_kelas: 1, nilai_huruf: null }
   ],
 
   aturan_akademik: [
-    { kode: 'MAX_SKS', nilai: 24, keterangan: 'Batas maksimal SKS per semester' }
+    { kode: 'MAX_SKS', nilai: 24, keterangan: 'Batas maksimal SKS per semester' },
+    { kode: 'MIN_SKS', nilai: 12, keterangan: 'Batas minimal SKS per semester' },
+    { kode: 'MAX_MK', nilai: 8, keterangan: 'Maksimal mata kuliah per semester' },
+    { kode: 'MAX_KELAS', nilai: 1, keterangan: 'Satu kelas untuk setiap mata kuliah dalam KRS' },
+    { kode: 'MIN_IPK', nilai: 2, keterangan: 'IPK minimum untuk ketentuan akademik' }
   ]
 };
 
 const counters = {
-  dosen: 1,
-  kelas: 2,
-  krs: 1
+  dosen: 5,
+  kelas: 5,
+  krs: 5
 };
 
 const getKey = (table, row) =>
