@@ -591,6 +591,15 @@
       btn.disabled = false; btn.classList.remove('loading');
       $('btnText').textContent = 'Masuk';
     });
+
+    window.addEventListener('pageshow', async (e) => {
+  if (!e.persisted) return;          // hanya saat dipulihkan dari tombol Back
+  try {
+    const r = await fetch('/api/me');
+    if (r.ok) { location.replace('/'); return; }  // sudah login: langsung ke dashboard
+  } catch (err) {}
+  location.reload();                 // belum login: muat ulang form dari awal
+});
   </script>
 </body>
 </html>

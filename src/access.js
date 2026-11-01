@@ -20,11 +20,14 @@ async function guard(req, res, next) {
     // Admin: akses penuh
     if (u.role === 'admin') return next();
 
+    // Mendukung nama field sesi "ref" atau "ref_id"
+    const ref = u.ref ?? u.ref_id;
+
     const [table, key, action] = req.path.split('/').filter(Boolean);
     const method = req.method;
 
     // Endpoint umum (hanya baca)
-    if (['health', 'meta', 'stats'].includes(table)) {
+    if (['health', 'meta', 'stats', 'me'].includes(table)) {
       return method === 'GET' ? next() : deny(res);
     }
 
@@ -35,7 +38,7 @@ async function guard(req, res, next) {
     //  MAHASISWA
     // =========================
     if (u.role === 'mahasiswa') {
-      const nim = String(u.ref);
+      const nim = String(ref);
       const ids = (await pool.query('SELECT id_krs FROM krs WHERE nim = $1', [nim]))
         .rows.map(r => Number(r.id_krs));
       const owns = (id) => ids.includes(Number(id));
@@ -61,19 +64,14 @@ async function guard(req, res, next) {
         return owns(key) ? next() : deny(res);
       }
 
+      // KRS dibuat dan diubah oleh admin; mahasiswa hanya boleh mengajukan.
       if (table === 'krs') {
-        if (method === 'POST') {
-          req.body.nim = nim; // paksa menjadi KRS milik sendiri
-          return next();
-        }
-        if ((method === 'PUT' || method === 'DELETE') && owns(key)) {
-          if (method === 'PUT') req.body.nim = nim;
-          return next();
-        }
-        return deny(res);
+        return deny(res, 'KRS dibuat dan dikelola oleh admin');
       }
 
       if (table === 'krs_detail') {
+        delete req.body.nilai_huruf; // nilai hanya boleh diisi dosen
+
         if (method === 'POST') return owns(req.body.id_krs) ? next() : deny(res);
 
         if (method === 'PUT' || method === 'DELETE') {
@@ -93,7 +91,7 @@ async function guard(req, res, next) {
     if (u.role === 'dosen') {
       if (method !== 'GET') return deny(res, 'Akun dosen hanya dapat melihat data');
 
-      const idDosen = Number(u.ref);
+      const idDosen = Number(ref);
 
       // mahasiswa bimbingan (PA) dan KRS mereka
       const nims = (await pool.query(

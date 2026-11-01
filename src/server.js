@@ -21,6 +21,10 @@ app.use('/api', access.guard);
 app.use(auth.requirePage);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// Mengambil ref (NIM / id_dosen) dari sesi. Mendukung nama field "ref" atau "ref_id".
+const refOf = (user) => user.ref ?? user.ref_id;
+
 // Metadata mengikuti struktur database modul_krs.
 const tables = {
   prodi: {
@@ -133,9 +137,6 @@ const tables = {
 const validTable = (name) =>
   Object.prototype.hasOwnProperty.call(tables, name);
 
-const keyOf = (table, row) =>
-  tables[table].pk.map(k => String(row[k])).join('~');
-
 const cleanStatus = (value) =>
   typeof value === 'string' ? value.toLowerCase() : value;
 
@@ -189,18 +190,14 @@ async function withLabels(table, rows) {
   if (table === 'dosen') {
     return rows.map(r => ({
       ...r,
-      label_prodi: prodi.find(
-        x => x.kode_prodi === r.kode_prodi
-      )?.nama_prodi
+      label_prodi: prodi.find(x => x.kode_prodi === r.kode_prodi)?.nama_prodi
     }));
   }
 
   if (table === 'mahasiswa') {
     return rows.map(r => ({
       ...r,
-      label_prodi: prodi.find(
-        x => x.kode_prodi === r.kode_prodi
-      )?.nama_prodi,
+      label_prodi: prodi.find(x => x.kode_prodi === r.kode_prodi)?.nama_prodi,
       label_dosen_pa: dosen.find(
         x => Number(x.id_dosen) === Number(r.id_dosen_pa)
       )?.nama
@@ -210,21 +207,15 @@ async function withLabels(table, rows) {
   if (table === 'mata_kuliah') {
     return rows.map(r => ({
       ...r,
-      label_prodi: prodi.find(
-        x => x.kode_prodi === r.kode_prodi
-      )?.nama_prodi
+      label_prodi: prodi.find(x => x.kode_prodi === r.kode_prodi)?.nama_prodi
     }));
   }
 
   if (table === 'kelas') {
     return rows.map(r => ({
       ...r,
-      label_mk: mk.find(
-        x => x.kode_mk === r.kode_mk
-      )?.nama_mk,
-      label_periode: periode.find(
-        x => x.id_periode === r.id_periode
-      )?.nama_periode,
+      label_mk: mk.find(x => x.kode_mk === r.kode_mk)?.nama_mk,
+      label_periode: periode.find(x => x.id_periode === r.id_periode)?.nama_periode,
       label_dosen: dosen.find(
         x => Number(x.id_dosen) === Number(r.id_dosen)
       )?.nama
@@ -234,37 +225,25 @@ async function withLabels(table, rows) {
   if (table === 'krs') {
     return rows.map(r => ({
       ...r,
-      label_mahasiswa: mahasiswa.find(
-        x => x.nim === r.nim
-      )?.nama,
-      label_periode: periode.find(
-        x => x.id_periode === r.id_periode
-      )?.nama_periode,
-      label_aturan: aturan.find(
-        x => x.kode_aturan === r.kode_aturan
-      )?.keterangan
+      label_mahasiswa: mahasiswa.find(x => x.nim === r.nim)?.nama,
+      label_periode: periode.find(x => x.id_periode === r.id_periode)?.nama_periode,
+      label_aturan: aturan.find(x => x.kode_aturan === r.kode_aturan)?.keterangan
     }));
   }
 
   if (table === 'krs_detail') {
     return rows.map(r => {
-      const parent = krs.find(
-        x => Number(x.id_krs) === Number(r.id_krs)
-      );
+      const parent = krs.find(x => Number(x.id_krs) === Number(r.id_krs));
 
       const selectedClass = kelas.find(
         x => Number(x.id_kelas) === Number(r.id_kelas)
       );
 
-      const subject = mk.find(
-        x => x.kode_mk === selectedClass?.kode_mk
-      );
+      const subject = mk.find(x => x.kode_mk === selectedClass?.kode_mk);
 
       return {
         ...r,
-        label_mahasiswa: mahasiswa.find(
-          x => x.nim === parent?.nim
-        )?.nama,
+        label_mahasiswa: mahasiswa.find(x => x.nim === parent?.nim)?.nama,
         label_periode: periode.find(
           x => x.id_periode === parent?.id_periode
         )?.nama_periode,
@@ -440,17 +419,13 @@ async function validateReferences(table, body, client = pool) {
       continue;
     }
 
-    if (value == null || value === '') {
-      throw new Error(`${field} wajib diisi`);
-    }
-
-    const result = await client.query(
+    const found = await client.query(
       `SELECT 1 FROM ${target} WHERE ${targetKey} = $1`,
       [value]
     );
 
-    if (!result.rowCount) {
-      throw new Error(`Referensi ${field} tidak ditemukan di ${target}`);
+    if (!found.rowCount) {
+      throw new Error(`${field} tidak ditemukan di tabel ${target}`);
     }
   }
 }
@@ -479,21 +454,162 @@ app.get('/api/meta', (req, res) => {
   res.json(tables);
 });
 
-// Statistik dashboard.
-app.get('/api/stats', async (req, res) => {
+// Info user yang sedang login (nama, peran, ref).
+// Harus berada SEBELUM route /api/:table.
+app.get('/api/me', async (req, res) => {
+  const u = req.session.user;
+
+  if (!u) {
+    return res.status(401).json({ error: 'Belum login' });
+  }
+
+  const ref = refOf(u);
+  let nama = u.username;
+
   try {
-    const stats = {};
-
-    for (const table of Object.keys(tables)) {
-      const result = await pool.query(
-        `SELECT COUNT(*)::int AS total FROM ${table}`
+    if (u.role === 'mahasiswa') {
+      const r = await pool.query(
+        'SELECT nama FROM mahasiswa WHERE nim = $1',
+        [String(ref)]
       );
-
-      stats[table] = result.rows[0].total;
+      nama = r.rows[0]?.nama || nama;
+    } else if (u.role === 'dosen') {
+      const r = await pool.query(
+        'SELECT nama FROM dosen WHERE id_dosen = $1',
+        [Number(ref)]
+      );
+      nama = r.rows[0]?.nama || nama;
+    } else {
+      nama = 'Administrator';
     }
 
-    res.json(stats);
+    res.json({ username: u.username, role: u.role, ref, nama });
   } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Statistik dashboard berdasarkan role pengguna.
+app.get('/api/stats', async (req, res) => {
+  try {
+    const user = req.session.user;
+
+    if (!user) {
+      return res.status(401).json({ error: 'Belum login' });
+    }
+
+    const ref = refOf(user);
+
+    // Dashboard Admin
+    if (user.role === 'admin') {
+      const stats = {};
+
+      for (const table of Object.keys(tables)) {
+        const result = await pool.query(
+          `SELECT COUNT(*)::int AS total FROM ${table}`
+        );
+
+        stats[table] = result.rows[0].total;
+      }
+
+      return res.json({
+        role: 'admin',
+        totalMahasiswa: stats.mahasiswa,
+        totalDosen: stats.dosen,
+        totalMataKuliah: stats.mata_kuliah,
+        totalKRS: stats.krs
+      });
+    }
+
+    // Dashboard Dosen
+    if (user.role === 'dosen') {
+      const idDosen = Number(ref);
+
+      const mahasiswa = await pool.query(
+        `SELECT COUNT(*)::int AS total
+         FROM mahasiswa
+         WHERE id_dosen_pa = $1`,
+        [idDosen]
+      );
+
+      const kelas = await pool.query(
+        `SELECT COUNT(*)::int AS total
+         FROM kelas
+         WHERE id_dosen = $1`,
+        [idDosen]
+      );
+
+      const krs = await pool.query(
+        `SELECT
+           COUNT(*) FILTER (
+             WHERE LOWER(k.status) = 'diajukan'
+           )::int AS menunggu,
+           COUNT(*) FILTER (
+             WHERE LOWER(k.status) = 'disetujui'
+           )::int AS disetujui
+         FROM krs k
+         JOIN mahasiswa m ON m.nim = k.nim
+         WHERE m.id_dosen_pa = $1`,
+        [idDosen]
+      );
+
+      return res.json({
+        role: 'dosen',
+        totalMahasiswa: mahasiswa.rows[0].total,
+        totalKelas: kelas.rows[0].total,
+        krsMenunggu: krs.rows[0].menunggu,
+        krsDisetujui: krs.rows[0].disetujui
+      });
+    }
+
+    // Dashboard Mahasiswa
+    if (user.role === 'mahasiswa') {
+      const nim = String(ref);
+
+      const krs = await pool.query(
+        `SELECT
+           COUNT(*)::int AS total,
+           COUNT(*) FILTER (
+             WHERE LOWER(status) = 'diajukan'
+           )::int AS diajukan,
+           COUNT(*) FILTER (
+             WHERE LOWER(status) = 'disetujui'
+           )::int AS disetujui,
+           COUNT(*) FILTER (
+             WHERE LOWER(status) = 'ditolak'
+           )::int AS ditolak
+         FROM krs
+         WHERE nim = $1`,
+        [nim]
+      );
+
+      const detail = await pool.query(
+        `SELECT
+           COUNT(*)::int AS total_matkul,
+           COALESCE(SUM(mk.sks), 0)::int AS total_sks
+         FROM krs k
+         JOIN krs_detail kd ON kd.id_krs = k.id_krs
+         JOIN kelas kl ON kl.id_kelas = kd.id_kelas
+         JOIN mata_kuliah mk ON mk.kode_mk = kl.kode_mk
+         WHERE k.nim = $1`,
+        [nim]
+      );
+
+      return res.json({
+        role: 'mahasiswa',
+        totalKRS: krs.rows[0].total,
+        totalMatkul: detail.rows[0].total_matkul,
+        totalSKS: detail.rows[0].total_sks,
+        krsDiajukan: krs.rows[0].diajukan,
+        krsDisetujui: krs.rows[0].disetujui,
+        krsDitolak: krs.rows[0].ditolak
+      });
+    }
+
+    return res.status(403).json({ error: 'Role tidak dikenali' });
+
+  } catch (e) {
+    console.error('Statistik dashboard:', e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -504,256 +620,6 @@ app.get('/api/options/:table', async (req, res) => {
     res.json(await all(req.params.table));
   } catch (e) {
     res.status(400).json({ error: e.message });
-  }
-});
-
-// Menampilkan data tabel.
-app.get('/api/:table', async (req, res) => {
-  try {
-    const table = req.params.table;
-    const rows = await all(table);
-
-    res.json(await withLabels(table, rows));
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
-// Menambahkan data.
-app.post('/api/:table', async (req, res) => {
-  const client = await pool.connect();
-
-  try {
-    const table = req.params.table;
-
-    if (!validTable(table)) {
-      throw new Error('Tabel tidak dikenal');
-    }
-
-    const body = normalizeBody(table, req.body);
-
-  // Hapus ID otomatis jika belum diisi.
-  for (const field of tables[table].fields) {
-    const column = field[0];
-
-    if (
-      field[2] === 'number' &&
-      !field[3] &&
-      body[column] == null
-    ) {
-      delete body[column];
-    }
-  }
-
-  if (table === 'krs') {
-    body.status = 'Draft';
-  }
-
-    for (const field of tables[table].fields) {
-      if (
-        field[3] &&
-        (body[field[0]] == null || body[field[0]] === '')
-      ) {
-        throw new Error(`${field[1]} wajib diisi`);
-      }
-    }
-
-    await client.query('BEGIN');
-
-    await validateReferences(table, body, client);
-
-    if (table === 'krs_detail') {
-      await validateKrsDetail(body, null, client);
-    }
-
-    const columns = Object.keys(body);
-    const values = columns.map(c => body[c]);
-
-    const sql = columns.length
-      ? `INSERT INTO ${table}
-         (${columns.join(', ')})
-         VALUES (${columns.map((_, i) => `$${i + 1}`).join(', ')})
-         RETURNING *`
-      : `INSERT INTO ${table} DEFAULT VALUES RETURNING *`;
-
-    const result = await client.query(sql, values);
-
-    await client.query('COMMIT');
-
-    const row = {
-      ...result.rows[0],
-      ...(result.rows[0].status
-        ? { status: cleanStatus(result.rows[0].status) }
-        : {})
-    };
-
-    res.status(201).json(row);
-
-  } catch (e) {
-    await client.query('ROLLBACK');
-
-    res.status(400).json({
-      error: e.detail || e.message
-    });
-
-  } finally {
-    client.release();
-  }
-});
-
-// Mengubah data.
-app.put('/api/:table/:key', async (req, res) => {
-  const client = await pool.connect();
-
-  try {
-    const table = req.params.table;
-
-    if (!validTable(table)) {
-      throw new Error('Tabel tidak dikenal');
-    }
-
-    const definition = tables[table];
-
-    const keyParts = decodeURIComponent(req.params.key).split('~');
-
-    if (keyParts.length !== definition.pk.length) {
-      throw new Error('Format kunci utama tidak valid');
-    }
-
-    await client.query('BEGIN');
-
-    const where = definition.pk
-      .map((col, i) => `${col} = $${i + 1}`)
-      .join(' AND ');
-
-    const existing = await client.query(
-      `SELECT * FROM ${table} WHERE ${where} FOR UPDATE`,
-      keyParts
-    );
-
-    if (!existing.rowCount) {
-      await client.query('ROLLBACK');
-
-      return res.status(404).json({
-        error: 'Data tidak ditemukan'
-      });
-    }
-
-    const body = {
-      ...existing.rows[0],
-      ...normalizeBody(table, req.body)
-    };
-
-    if (table === 'krs') {
-      if (String(existing.rows[0].status).toLowerCase() !== 'draft') {
-        throw new Error('KRS yang sudah diajukan atau diproses tidak bisa diubah');
-      }
-
-      if (String(body.status).toLowerCase() !== 'draft') {
-        throw new Error('Gunakan proses Ajukan KRS untuk mengubah status');
-      }
-    }
-
-    for (const field of definition.fields) {
-      if (
-        field[3] &&
-        (body[field[0]] == null || body[field[0]] === '')
-      ) {
-        throw new Error(`${field[1]} wajib diisi`);
-      }
-    }
-
-    await validateReferences(table, body, client);
-
-    if (table === 'krs_detail') {
-      await validateKrsDetail(body, keyParts.join('~'), client);
-    }
-
-    const updateCols = Object.keys(
-      normalizeBody(table, req.body)
-    ).filter(c => !definition.pk.includes(c));
-
-    let result;
-
-    if (!updateCols.length) {
-      result = { rows: [existing.rows[0]] };
-    } else {
-      const values = updateCols.map(c => body[c]);
-
-      const set = updateCols
-        .map((c, i) => `${c} = $${keyParts.length + i + 1}`)
-        .join(', ');
-
-      result = await client.query(
-        `UPDATE ${table}
-         SET ${set}
-         WHERE ${where}
-         RETURNING *`,
-        [...keyParts, ...values]
-      );
-    }
-
-    await client.query('COMMIT');
-
-    res.json({
-      ...result.rows[0],
-      ...(result.rows[0].status
-        ? { status: cleanStatus(result.rows[0].status) }
-        : {})
-    });
-
-  } catch (e) {
-    await client.query('ROLLBACK');
-
-    res.status(400).json({
-      error: e.detail || e.message
-    });
-
-  } finally {
-    client.release();
-  }
-});
-
-// Menghapus data.
-app.delete('/api/:table/:key', async (req, res) => {
-  try {
-    const table = req.params.table;
-
-    if (!validTable(table)) {
-      throw new Error('Tabel tidak dikenal');
-    }
-
-    const definition = tables[table];
-
-    const keyParts = decodeURIComponent(req.params.key).split('~');
-
-    if (keyParts.length !== definition.pk.length) {
-      throw new Error('Format kunci utama tidak valid');
-    }
-
-    const where = definition.pk
-      .map((col, i) => `${col} = $${i + 1}`)
-      .join(' AND ');
-
-    const result = await pool.query(
-      `DELETE FROM ${table} WHERE ${where} RETURNING *`,
-      keyParts
-    );
-
-    if (!result.rowCount) {
-      return res.status(404).json({
-        error: 'Data tidak ditemukan'
-      });
-    }
-
-    res.json({ ok: true });
-
-  } catch (e) {
-    const message = e.code === '23503'
-      ? 'Data masih digunakan oleh relasi lain'
-      : (e.detail || e.message);
-
-    res.status(400).json({ error: message });
   }
 });
 
@@ -838,20 +704,258 @@ app.post('/api/krs/:id/submit', async (req, res) => {
   } catch (e) {
     await client.query('ROLLBACK');
 
-    res.status(400).json({
-      error: e.detail || e.message
-    });
+    res.status(400).json({ error: e.detail || e.message });
 
   } finally {
     client.release();
   }
 });
 
+// Menampilkan data tabel.
+app.get('/api/:table', async (req, res) => {
+  try {
+    const table = req.params.table;
+    const rows = await all(table);
+
+    res.json(await withLabels(table, rows));
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Menambahkan data.
+app.post('/api/:table', async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const table = req.params.table;
+
+    if (!validTable(table)) {
+      throw new Error('Tabel tidak dikenal');
+    }
+
+    const body = normalizeBody(table, req.body);
+
+    // Hapus ID otomatis jika belum diisi.
+    for (const field of tables[table].fields) {
+      const column = field[0];
+
+      if (
+        field[2] === 'number' &&
+        !field[3] &&
+        body[column] == null
+      ) {
+        delete body[column];
+      }
+    }
+
+    if (table === 'krs') {
+      body.status = 'Draft';
+    }
+
+    for (const field of tables[table].fields) {
+      if (
+        field[3] &&
+        (body[field[0]] == null || body[field[0]] === '')
+      ) {
+        throw new Error(`${field[1]} wajib diisi`);
+      }
+    }
+
+    await client.query('BEGIN');
+
+    await validateReferences(table, body, client);
+
+    if (table === 'krs_detail') {
+      await validateKrsDetail(body, null, client);
+    }
+
+    const columns = Object.keys(body);
+    const values = columns.map(c => body[c]);
+
+    const sql = columns.length
+      ? `INSERT INTO ${table}
+         (${columns.join(', ')})
+         VALUES (${columns.map((_, i) => `$${i + 1}`).join(', ')})
+         RETURNING *`
+      : `INSERT INTO ${table} DEFAULT VALUES RETURNING *`;
+
+    const result = await client.query(sql, values);
+
+    await client.query('COMMIT');
+
+    const row = {
+      ...result.rows[0],
+      ...(result.rows[0].status
+        ? { status: cleanStatus(result.rows[0].status) }
+        : {})
+    };
+
+    res.status(201).json(row);
+
+  } catch (e) {
+    await client.query('ROLLBACK');
+
+    res.status(400).json({ error: e.detail || e.message });
+
+  } finally {
+    client.release();
+  }
+});
+
+// Mengubah data.
+app.put('/api/:table/:key', async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const table = req.params.table;
+
+    if (!validTable(table)) {
+      throw new Error('Tabel tidak dikenal');
+    }
+
+    const definition = tables[table];
+
+    const keyParts = decodeURIComponent(req.params.key).split('~');
+
+    if (keyParts.length !== definition.pk.length) {
+      throw new Error('Format kunci utama tidak valid');
+    }
+
+    await client.query('BEGIN');
+
+    const where = definition.pk
+      .map((col, i) => `${col} = $${i + 1}`)
+      .join(' AND ');
+
+    const existing = await client.query(
+      `SELECT * FROM ${table} WHERE ${where} FOR UPDATE`,
+      keyParts
+    );
+
+    if (!existing.rowCount) {
+      await client.query('ROLLBACK');
+
+      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    }
+
+    const body = {
+      ...existing.rows[0],
+      ...normalizeBody(table, req.body)
+    };
+
+    if (table === 'krs') {
+      if (String(existing.rows[0].status).toLowerCase() !== 'draft') {
+        throw new Error('KRS yang sudah diajukan atau diproses tidak bisa diubah');
+      }
+
+      if (String(body.status).toLowerCase() !== 'draft') {
+        throw new Error('Gunakan proses Ajukan KRS untuk mengubah status');
+      }
+    }
+
+    for (const field of definition.fields) {
+      if (
+        field[3] &&
+        (body[field[0]] == null || body[field[0]] === '')
+      ) {
+        throw new Error(`${field[1]} wajib diisi`);
+      }
+    }
+
+    await validateReferences(table, body, client);
+
+    if (table === 'krs_detail') {
+      await validateKrsDetail(body, keyParts.join('~'), client);
+    }
+
+    const updateCols = Object.keys(
+      normalizeBody(table, req.body)
+    ).filter(c => !definition.pk.includes(c));
+
+    let result;
+
+    if (!updateCols.length) {
+      result = { rows: [existing.rows[0]] };
+    } else {
+      const values = updateCols.map(c => body[c]);
+
+      const set = updateCols
+        .map((c, i) => `${c} = $${keyParts.length + i + 1}`)
+        .join(', ');
+
+      result = await client.query(
+        `UPDATE ${table}
+         SET ${set}
+         WHERE ${where}
+         RETURNING *`,
+        [...keyParts, ...values]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      ...result.rows[0],
+      ...(result.rows[0].status
+        ? { status: cleanStatus(result.rows[0].status) }
+        : {})
+    });
+
+  } catch (e) {
+    await client.query('ROLLBACK');
+
+    res.status(400).json({ error: e.detail || e.message });
+
+  } finally {
+    client.release();
+  }
+});
+
+// Menghapus data.
+app.delete('/api/:table/:key', async (req, res) => {
+  try {
+    const table = req.params.table;
+
+    if (!validTable(table)) {
+      throw new Error('Tabel tidak dikenal');
+    }
+
+    const definition = tables[table];
+
+    const keyParts = decodeURIComponent(req.params.key).split('~');
+
+    if (keyParts.length !== definition.pk.length) {
+      throw new Error('Format kunci utama tidak valid');
+    }
+
+    const where = definition.pk
+      .map((col, i) => `${col} = $${i + 1}`)
+      .join(' AND ');
+
+    const result = await pool.query(
+      `DELETE FROM ${table} WHERE ${where} RETURNING *`,
+      keyParts
+    );
+
+    if (!result.rowCount) {
+      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    }
+
+    res.json({ ok: true });
+
+  } catch (e) {
+    const message = e.code === '23503'
+      ? 'Data masih digunakan oleh relasi lain'
+      : (e.detail || e.message);
+
+    res.status(400).json({ error: message });
+  }
+});
+
 // Mengarahkan halaman selain API ke index.html.
 app.get('*', (req, res) => {
-  res.sendFile(
-    path.join(__dirname, '..', 'public', 'index.html')
-  );
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 // Menjalankan server.
