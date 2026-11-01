@@ -4,9 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>SIKRS | Sistem Informasi KRS</title>
-
   <link rel="stylesheet" href="/style.css">
 </head>
 
@@ -15,7 +13,6 @@
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-mark">S</div>
-
       <div>
         <b>SIKRS</b>
         <small>Academic Management</small>
@@ -29,12 +26,11 @@
     </button>
 
     <div class="nav-label">DATA AKADEMIK</div>
-
     <div id="nav-data"></div>
 
     <div class="sidebar-foot">
       <span class="pulse"></span>
-      Penyimpanan sementara
+      Database PostgreSQL
       <b id="conn">Memeriksa…</b>
     </div>
   </aside>
@@ -44,9 +40,7 @@
     <header>
       <div>
         <div class="eyebrow">SISTEM INFORMASI AKADEMIK</div>
-
         <h1 id="page-title">Dashboard</h1>
-
         <p id="page-subtitle">
           Ringkasan data dan pengelolaan akademik.
         </p>
@@ -63,21 +57,16 @@
       <div class="welcome">
         <div>
           <span class="welcome-tag">ADMINISTRATOR</span>
-
           <h2>Selamat datang di SI-KRS</h2>
-
           <p>
             Kelola data akademik secara terstruktur
             sesuai relasi dan aturan ERD.
           </p>
         </div>
-
         <div class="welcome-icon">▤</div>
       </div>
 
       <div id="stats" class="stats"></div>
-
-      
     </section>
 
     <!-- Halaman CRUD -->
@@ -86,7 +75,6 @@
         <div class="toolbar">
           <div>
             <h3 id="table-heading">Data</h3>
-
             <p id="table-desc">
               Kelola data akademik sesuai struktur ERD.
             </p>
@@ -117,10 +105,7 @@
 
         <div class="table-bottom">
           <span id="row-count">0 data</span>
-
-          <span>
-            Data bersifat sementara selama server berjalan.
-          </span>
+          <span>Data tersimpan dalam database PostgreSQL.</span>
         </div>
       </div>
     </section>
@@ -128,7 +113,7 @@
     <!-- Footer -->
     <footer>
       <span>SIKRS · Sistem Informasi Kartu Rencana Studi</span>
-      <span>Simulasi CRUD · Tanpa database</span>
+      <span>PostgreSQL · Database Terintegrasi</span>
     </footer>
   </main>
 
@@ -155,11 +140,7 @@
         <div id="form-fields" class="form-grid"></div>
 
         <div class="form-actions">
-          <button
-            type="button"
-            class="btn ghost"
-            id="cancel"
-          >
+          <button type="button" class="btn ghost" id="cancel">
             Batal
           </button>
 

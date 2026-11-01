@@ -16,8 +16,14 @@
   box-sizing: border-box;
 }
 
+html,
 body {
+  min-height: 100%;
+  width: 100%;
   margin: 0;
+}
+
+body {
   background: var(--bg);
   color: var(--ink);
   font-family: Inter, "Segoe UI", Arial, sans-serif;
@@ -32,6 +38,7 @@ body {
   display: flex;
   flex-direction: column;
   width: 250px;
+  min-width: 250px;
   padding: 26px 16px;
   background: #13223b;
   color: #dce5f5;
@@ -49,6 +56,7 @@ body {
   place-items: center;
   width: 39px;
   height: 39px;
+  flex-shrink: 0;
   border-radius: 12px;
   background: linear-gradient(135deg, #628bff, #3761dc);
   color: white;
@@ -60,7 +68,6 @@ body {
 .brand b {
   color: #fff;
   font-size: 18px;
-  letter-spacing: 0.4px;
 }
 
 .brand small {
@@ -68,7 +75,6 @@ body {
   margin-top: 4px;
   color: #91a3c0;
   font-size: 10px;
-  letter-spacing: 0.4px;
 }
 
 .nav-label {
@@ -138,6 +144,8 @@ body {
 .main {
   display: flex;
   flex-direction: column;
+  width: auto;
+  min-width: 0;
   min-height: 100vh;
   margin-left: 250px;
   padding: 0 32px;
@@ -147,6 +155,8 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  min-width: 0;
   margin-bottom: 24px;
   padding: 30px 0 24px;
   border-bottom: 1px solid var(--line);
@@ -162,7 +172,6 @@ header {
 h1 {
   margin: 7px 0 5px;
   font-size: 27px;
-  letter-spacing: -0.7px;
 }
 
 header p,
@@ -189,6 +198,7 @@ header p,
   place-items: center;
   width: 38px;
   height: 38px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: #e3eaff;
   color: #3159c5;
@@ -196,6 +206,8 @@ header p,
 }
 
 .page {
+  width: 100%;
+  min-width: 0;
   padding-bottom: 22px;
 }
 
@@ -203,11 +215,13 @@ header p,
   display: none !important;
 }
 
-/* DASHBOARD WELCOME */
+/* DASHBOARD */
 .welcome {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  min-width: 0;
   margin-bottom: 22px;
   padding: 27px 31px;
   border-radius: 16px;
@@ -240,15 +254,16 @@ header p,
   font-size: 54px;
 }
 
-/* DASHBOARD STATISTICS */
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 15px;
+  width: 100%;
   margin-bottom: 22px;
 }
 
 .stat {
+  min-width: 0;
   padding: 19px;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -279,15 +294,16 @@ header p,
   display: block;
   margin: 14px 0 5px;
   font-size: 28px;
-  letter-spacing: -0.6px;
 }
 
 .stat small {
   color: #8c98aa;
 }
 
-/* PANELS AND MODULES */
+/* PANELS */
 .panel {
+  width: 100%;
+  min-width: 0;
   margin-bottom: 22px;
   padding: 23px 24px;
   border: 1px solid var(--line);
@@ -348,7 +364,7 @@ header p,
   color: #8b98aa;
 }
 
-/* TOOLBAR AND BUTTONS */
+/* TOOLBAR */
 .toolbar {
   display: flex;
   align-items: center;
@@ -408,6 +424,7 @@ select:focus {
 
 /* TABLE */
 .table-wrap {
+  width: 100%;
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 9px;
@@ -430,7 +447,6 @@ th {
   text-align: left;
   text-transform: uppercase;
   font-size: 10px;
-  letter-spacing: 0.7px;
 }
 
 td {
@@ -490,7 +506,7 @@ tbody tr:last-child td {
   font-size: 11px;
 }
 
-/* NOTICES */
+/* NOTICE */
 .notice {
   margin-bottom: 14px;
   padding: 11px 13px;
@@ -500,7 +516,7 @@ tbody tr:last-child td {
   font-size: 12px;
 }
 
-/* FORM MODAL */
+/* FORM */
 .modal {
   position: fixed;
   inset: 0;
@@ -621,10 +637,11 @@ footer {
   font-size: 10px;
 }
 
-/* RESPONSIVE: TABLET */
+/* RESPONSIVE TABLET */
 @media (max-width: 1050px) {
   .sidebar {
     width: 215px;
+    min-width: 215px;
   }
 
   .main {
@@ -633,18 +650,19 @@ footer {
   }
 
   .stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .module-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* RESPONSIVE: MOBILE */
+/* RESPONSIVE MOBILE */
 @media (max-width: 700px) {
   .sidebar {
     width: 65px;
+    min-width: 65px;
     padding: 20px 8px;
   }
 
@@ -713,7 +731,7 @@ footer {
   }
 }
 
-
+/* KRS SUBMIT */
 #submit-krs,
 .mini[data-submit-krs] {
   background: var(--blue);

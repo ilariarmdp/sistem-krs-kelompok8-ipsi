@@ -1,15 +1,12 @@
-
 const express = require('express');
 const path = require('path');
+const pool = require('./db');
 
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// ==================================================
-// DEFINISI 9 ENTITAS SESUAI ERD
-// ==================================================
-
+// Metadata mengikuti struktur database modul_krs.
 const tables = {
   prodi: {
     label: 'Program Studi',
@@ -26,7 +23,7 @@ const tables = {
     pk: ['id_dosen'],
     fields: [
       ['id_dosen', 'ID Dosen', 'number', false],
-      ['nidn', 'NIDN', 'text', true],
+      ['nidn', 'NIDN', 'text', false],
       ['nama', 'Nama Dosen', 'text', true],
       ['email', 'Email', 'email', false],
       ['kode_prodi', 'Program Studi', 'fk', true, 'prodi', 'kode_prodi', 'nama_prodi']
@@ -43,9 +40,7 @@ const tables = {
       ['tahun_masuk', 'Tahun Masuk', 'number', true],
       ['status', 'Status', 'select', true, ['aktif', 'cuti', 'lulus', 'keluar']],
       ['kode_prodi', 'Program Studi', 'fk', true, 'prodi', 'kode_prodi', 'nama_prodi'],
-      ['id_dosen_pa', 'Dosen PA', 'fk', false, 'dosen', 'id_dosen', 'nama'],
-      ['created_at', 'Dibuat Pada', 'date', false],
-      ['no_hp', 'No. HP', 'text', false]
+      ['id_dosen_pa', 'Dosen PA', 'fk', false, 'dosen', 'id_dosen', 'nama']
     ]
   },
 
@@ -56,7 +51,8 @@ const tables = {
       ['kode_mk', 'Kode MK', 'text', true],
       ['nama_mk', 'Nama Mata Kuliah', 'text', true],
       ['sks', 'SKS', 'number', true],
-      ['semester_ke', 'Semester', 'number', true]
+      ['semester_ke', 'Semester', 'number', true],
+      ['kode_prodi', 'Program Studi', 'fk', true, 'prodi', 'kode_prodi', 'nama_prodi']
     ]
   },
 
@@ -80,7 +76,8 @@ const tables = {
       ['id_periode', 'Periode', 'fk', true, 'periode', 'id_periode', 'nama_periode'],
       ['id_dosen', 'Dosen Pengampu', 'fk', true, 'dosen', 'id_dosen', 'nama'],
       ['nama_kelas', 'Nama Kelas', 'text', true],
-      ['kuota', 'Kuota', 'number', true]
+      ['kuota', 'Kuota', 'number', true],
+      ['ruangan', 'Ruangan', 'text', false]
     ]
   },
 
@@ -91,6 +88,7 @@ const tables = {
       ['id_krs', 'ID KRS', 'number', false],
       ['nim', 'Mahasiswa', 'fk', true, 'mahasiswa', 'nim', 'nama'],
       ['id_periode', 'Periode', 'fk', true, 'periode', 'id_periode', 'nama_periode'],
+      ['kode_aturan', 'Aturan Akademik', 'fk', true, 'aturan_akademik', 'kode_aturan', 'keterangan'],
       ['tgl_isi', 'Tanggal Isi', 'date', true],
       ['status', 'Status KRS', 'select', true, ['draft', 'diajukan', 'disetujui', 'ditolak']]
     ]
@@ -108,143 +106,156 @@ const tables = {
 
   aturan_akademik: {
     label: 'Aturan Akademik',
-    pk: ['kode'],
+    pk: ['kode_aturan'],
     fields: [
-      ['kode', 'Kode Aturan', 'text', true],
+      ['kode_aturan', 'Kode Aturan', 'text', true],
       ['nilai', 'Nilai', 'number', true],
       ['keterangan', 'Keterangan', 'text', false]
     ]
   }
 };
 
+const validTable = (name) =>
+  Object.prototype.hasOwnProperty.call(tables, name);
 
-const data = {
-  prodi: [
-    { kode_prodi: 'SI', nama_prodi: 'Sistem Informasi', jenjang: 'S1' },
-    { kode_prodi: 'IF', nama_prodi: 'Informatika', jenjang: 'S1' },
-    { kode_prodi: 'TI', nama_prodi: 'Teknik Industri', jenjang: 'S1' },
-    { kode_prodi: 'MI', nama_prodi: 'Manajemen Informatika', jenjang: 'D3' },
-    { kode_prodi: 'KA', nama_prodi: 'Komputerisasi Akuntansi', jenjang: 'D3' }
-  ],
+const keyOf = (table, row) =>
+  tables[table].pk.map(k => String(row[k])).join('~');
 
-  dosen: [
-    { id_dosen: 1, nidn: '0012345678', nama: 'Budi Santoso', email: 'budi@example.com', kode_prodi: 'SI' },
-    { id_dosen: 2, nidn: '0012345679', nama: 'Siti Rahmawati', email: 'siti@example.com', kode_prodi: 'SI' },
-    { id_dosen: 3, nidn: '0012345680', nama: 'Agus Setiawan', email: 'agus@example.com', kode_prodi: 'IF' },
-    { id_dosen: 4, nidn: '0012345681', nama: 'Dewi Lestari', email: 'dewi@example.com', kode_prodi: 'TI' },
-    { id_dosen: 5, nidn: '0012345682', nama: 'Rina Kurnia', email: 'rina@example.com', kode_prodi: 'MI' }
-  ],
+const cleanStatus = (value) =>
+  typeof value === 'string' ? value.toLowerCase() : value;
 
-  mahasiswa: [
-    { nim: '2301001', nama: 'Andi Saputra', email: 'andi@example.com', tahun_masuk: 2023, status: 'aktif', kode_prodi: 'SI', id_dosen_pa: 1, created_at: '2026-10-27', no_hp: '081234567890' },
-    { nim: '2301002', nama: 'Rina Putri', email: 'rina.putri@example.com', tahun_masuk: 2023, status: 'aktif', kode_prodi: 'SI', id_dosen_pa: 2, created_at: '2026-10-27', no_hp: '081234567891' },
-    { nim: '2301003', nama: 'Dimas Pratama', email: 'dimas@example.com', tahun_masuk: 2023, status: 'aktif', kode_prodi: 'IF', id_dosen_pa: 3, created_at: '2026-10-27', no_hp: '081234567892' },
-    { nim: '2401001', nama: 'Nadia Safitri', email: 'nadia@example.com', tahun_masuk: 2024, status: 'aktif', kode_prodi: 'TI', id_dosen_pa: 4, created_at: '2026-10-27', no_hp: '081234567893' },
-    { nim: '2401002', nama: 'Fajar Ramadhan', email: 'fajar@example.com', tahun_masuk: 2024, status: 'aktif', kode_prodi: 'MI', id_dosen_pa: 5, created_at: '2026-10-27', no_hp: '081234567894' }
-  ],
+const dbStatus = (value) =>
+  typeof value === 'string'
+    ? ({
+        aktif: 'Aktif',
+        draft: 'Draft',
+        diajukan: 'Diajukan',
+        disetujui: 'Disetujui',
+        ditolak: 'Ditolak'
+      }[value.toLowerCase()] || value)
+    : value;
 
-  mata_kuliah: [
-    { kode_mk: 'SI301', nama_mk: 'Analisis Sistem Informasi', sks: 3, semester_ke: 5 },
-    { kode_mk: 'SI302', nama_mk: 'Manajemen Basis Data', sks: 3, semester_ke: 5 },
-    { kode_mk: 'SI303', nama_mk: 'Rekayasa Perangkat Lunak', sks: 3, semester_ke: 5 },
-    { kode_mk: 'SI304', nama_mk: 'Manajemen Proyek TI', sks: 2, semester_ke: 5 },
-    { kode_mk: 'SI305', nama_mk: 'Keamanan Sistem Informasi', sks: 3, semester_ke: 5 }
-  ],
+// Mengambil seluruh data dari PostgreSQL.
+async function all(table) {
+  if (!validTable(table)) {
+    throw new Error('Tabel tidak dikenal');
+  }
 
-  periode: [
-    { id_periode: '2025G', nama_periode: 'Ganjil 2025/2026', tgl_mulai: '2025-08-01', tgl_selesai: '2026-01-31' },
-    { id_periode: '2025E', nama_periode: 'Genap 2025/2026', tgl_mulai: '2026-02-01', tgl_selesai: '2026-07-31' },
-    { id_periode: '2026G', nama_periode: 'Ganjil 2026/2027', tgl_mulai: '2026-08-01', tgl_selesai: '2027-01-31' },
-    { id_periode: '2026E', nama_periode: 'Genap 2026/2027', tgl_mulai: '2027-02-01', tgl_selesai: '2027-07-31' },
-    { id_periode: '2027G', nama_periode: 'Ganjil 2027/2028', tgl_mulai: '2027-08-01', tgl_selesai: '2028-01-31' }
-  ],
+  const { rows } = await pool.query(`SELECT * FROM ${table}`);
 
-  kelas: [
-    { id_kelas: 1, kode_mk: 'SI301', id_periode: '2026G', id_dosen: 1, nama_kelas: 'A', kuota: 30 },
-    { id_kelas: 2, kode_mk: 'SI302', id_periode: '2026G', id_dosen: 2, nama_kelas: 'A', kuota: 30 },
-    { id_kelas: 3, kode_mk: 'SI303', id_periode: '2026G', id_dosen: 3, nama_kelas: 'A', kuota: 30 },
-    { id_kelas: 4, kode_mk: 'SI304', id_periode: '2026G', id_dosen: 4, nama_kelas: 'A', kuota: 25 },
-    { id_kelas: 5, kode_mk: 'SI305', id_periode: '2026G', id_dosen: 5, nama_kelas: 'A', kuota: 25 }
-  ],
+  return rows.map(row => ({
+    ...row,
+    ...(row.status ? { status: cleanStatus(row.status) } : {})
+  }));
+}
 
-  krs: [
-  ],
+// Menambahkan label relasi agar tampilan frontend lebih mudah dibaca.
+async function withLabels(table, rows) {
+  const [
+    prodi,
+    dosen,
+    mahasiswa,
+    mk,
+    periode,
+    kelas,
+    krs
+  ] = await Promise.all([
+    all('prodi'),
+    all('dosen'),
+    all('mahasiswa'),
+    all('mata_kuliah'),
+    all('periode'),
+    all('kelas'),
+    all('krs')
+  ]);
 
-  krs_detail: [
-  ],
-
-  aturan_akademik: [
-    { kode: 'MAX_SKS', nilai: 24, keterangan: 'Batas maksimal SKS per semester' },
-    { kode: 'MIN_SKS', nilai: 12, keterangan: 'Batas minimal SKS per semester' },
-    { kode: 'MAX_MK', nilai: 8, keterangan: 'Maksimal mata kuliah per semester' },
-    { kode: 'MAX_KELAS', nilai: 1, keterangan: 'Satu kelas untuk setiap mata kuliah dalam KRS' },
-    { kode: 'MIN_IPK', nilai: 2, keterangan: 'IPK minimum untuk ketentuan akademik' }
-  ]
-};
-
-const counters = {
-  dosen: 5,
-  kelas: 5,
-  krs: 5
-};
-
-const getKey = (table, row) =>
-  tables[table].pk.map(key => String(row[key])).join('~');
-
-// ==================================================
-// DATA DENGAN LABEL RELASI UNTUK TAMPILAN
-// ==================================================
-
-function getRows(table) {
-  if (!tables[table]) throw new Error('Tabel tidak dikenal');
-
-  const rows = data[table].map(row => ({ ...row }));
+  const aturan = await all('aturan_akademik');
 
   if (table === 'dosen') {
-    return rows.map(row => ({
-      ...row,
-      label_prodi: data.prodi.find(p => p.kode_prodi === row.kode_prodi)?.nama_prodi
+    return rows.map(r => ({
+      ...r,
+      label_prodi: prodi.find(
+        x => x.kode_prodi === r.kode_prodi
+      )?.nama_prodi
     }));
   }
 
   if (table === 'mahasiswa') {
-    return rows.map(row => ({
-      ...row,
-      label_prodi: data.prodi.find(p => p.kode_prodi === row.kode_prodi)?.nama_prodi,
-      label_dosen_pa: data.dosen.find(d => d.id_dosen === row.id_dosen_pa)?.nama
+    return rows.map(r => ({
+      ...r,
+      label_prodi: prodi.find(
+        x => x.kode_prodi === r.kode_prodi
+      )?.nama_prodi,
+      label_dosen_pa: dosen.find(
+        x => Number(x.id_dosen) === Number(r.id_dosen_pa)
+      )?.nama
+    }));
+  }
+
+  if (table === 'mata_kuliah') {
+    return rows.map(r => ({
+      ...r,
+      label_prodi: prodi.find(
+        x => x.kode_prodi === r.kode_prodi
+      )?.nama_prodi
     }));
   }
 
   if (table === 'kelas') {
-    return rows.map(row => ({
-      ...row,
-      label_mk: data.mata_kuliah.find(m => m.kode_mk === row.kode_mk)?.nama_mk,
-      label_periode: data.periode.find(p => p.id_periode === row.id_periode)?.nama_periode,
-      label_dosen: data.dosen.find(d => d.id_dosen === row.id_dosen)?.nama
+    return rows.map(r => ({
+      ...r,
+      label_mk: mk.find(
+        x => x.kode_mk === r.kode_mk
+      )?.nama_mk,
+      label_periode: periode.find(
+        x => x.id_periode === r.id_periode
+      )?.nama_periode,
+      label_dosen: dosen.find(
+        x => Number(x.id_dosen) === Number(r.id_dosen)
+      )?.nama
     }));
   }
 
   if (table === 'krs') {
-    return rows.map(row => ({
-      ...row,
-      label_mahasiswa: data.mahasiswa.find(m => m.nim === row.nim)?.nama,
-      label_periode: data.periode.find(p => p.id_periode === row.id_periode)?.nama_periode
+    return rows.map(r => ({
+      ...r,
+      label_mahasiswa: mahasiswa.find(
+        x => x.nim === r.nim
+      )?.nama,
+      label_periode: periode.find(
+        x => x.id_periode === r.id_periode
+      )?.nama_periode,
+      label_aturan: aturan.find(
+        x => x.kode_aturan === r.kode_aturan
+      )?.keterangan
     }));
   }
 
   if (table === 'krs_detail') {
-    return rows.map(row => {
-      const krs = data.krs.find(k => Number(k.id_krs) === Number(row.id_krs));
-      const kelas = data.kelas.find(k => Number(k.id_kelas) === Number(row.id_kelas));
-      const mk = data.mata_kuliah.find(m => m.kode_mk === kelas?.kode_mk);
+    return rows.map(r => {
+      const parent = krs.find(
+        x => Number(x.id_krs) === Number(r.id_krs)
+      );
+
+      const selectedClass = kelas.find(
+        x => Number(x.id_kelas) === Number(r.id_kelas)
+      );
+
+      const subject = mk.find(
+        x => x.kode_mk === selectedClass?.kode_mk
+      );
 
       return {
-        ...row,
-        label_mahasiswa: data.mahasiswa.find(m => m.nim === krs?.nim)?.nama,
-        label_periode: data.periode.find(p => p.id_periode === krs?.id_periode)?.nama_periode,
-        label_mk: mk?.nama_mk,
-        label_kelas: kelas?.nama_kelas,
-        label_sks: mk?.sks ?? 0
+        ...r,
+        label_mahasiswa: mahasiswa.find(
+          x => x.nim === parent?.nim
+        )?.nama,
+        label_periode: periode.find(
+          x => x.id_periode === parent?.id_periode
+        )?.nama_periode,
+        label_mk: subject?.nama_mk,
+        label_kelas: selectedClass?.nama_kelas,
+        label_sks: subject?.sks ?? 0
       };
     });
   }
@@ -252,17 +263,141 @@ function getRows(table) {
   return rows;
 }
 
-// ==================================================
-// VALIDASI RELASI
-// ==================================================
+// Menghitung ringkasan KRS.
+async function getSummary(idKrs, client = pool) {
+  const result = await client.query(`
+    SELECT
+      k.id_krs,
+      m.nama AS mahasiswa,
+      lower(k.status) AS status,
+      COUNT(kd.id_kelas)::int AS jumlah_mata_kuliah,
+      COALESCE(SUM(mk.sks), 0)::int AS total_sks
+    FROM krs k
+    JOIN mahasiswa m ON m.nim = k.nim
+    LEFT JOIN krs_detail kd ON kd.id_krs = k.id_krs
+    LEFT JOIN kelas kl ON kl.id_kelas = kd.id_kelas
+    LEFT JOIN mata_kuliah mk ON mk.kode_mk = kl.kode_mk
+    WHERE k.id_krs = $1
+    GROUP BY k.id_krs, m.nama, k.status
+  `, [idKrs]);
 
-function validateReferences(table, body) {
+  if (!result.rowCount) {
+    throw new Error('KRS tidak ditemukan');
+  }
+
+  return result.rows[0];
+}
+
+// Validasi detail KRS.
+async function validateKrsDetail(body, currentKey = null, client = pool) {
+  const parentResult = await client.query(
+    'SELECT * FROM krs WHERE id_krs = $1',
+    [body.id_krs]
+  );
+
+  const classResult = await client.query(
+    'SELECT * FROM kelas WHERE id_kelas = $1',
+    [body.id_kelas]
+  );
+
+  const parent = parentResult.rows[0];
+  const selectedClass = classResult.rows[0];
+
+  if (!parent || !selectedClass) {
+    throw new Error('KRS atau kelas kuliah tidak ditemukan');
+  }
+
+  if (String(parent.status).toLowerCase() !== 'draft') {
+    throw new Error('Detail hanya bisa diubah saat KRS berstatus draft');
+  }
+
+  if (String(parent.id_periode) !== String(selectedClass.id_periode)) {
+    throw new Error('Periode kelas tidak sesuai dengan periode KRS');
+  }
+
+  const duplicate = await client.query(
+    `SELECT 1 FROM krs_detail
+     WHERE id_krs = $1 AND id_kelas = $2`,
+    [body.id_krs, body.id_kelas]
+  );
+
+  if (
+    duplicate.rowCount &&
+    currentKey !== `${body.id_krs}~${body.id_kelas}`
+  ) {
+    throw new Error('Kelas ini sudah ada dalam KRS');
+  }
+
+  const summary = await client.query(`
+    SELECT COALESCE(SUM(mk.sks), 0)::int AS total
+    FROM krs_detail kd
+    JOIN kelas kl ON kl.id_kelas = kd.id_kelas
+    JOIN mata_kuliah mk ON mk.kode_mk = kl.kode_mk
+    WHERE kd.id_krs = $1
+      AND NOT (kd.id_krs = $1 AND kd.id_kelas = $2)
+  `, [body.id_krs, body.id_kelas]);
+
+  const subject = await client.query(
+    'SELECT sks FROM mata_kuliah WHERE kode_mk = $1',
+    [selectedClass.kode_mk]
+  );
+
+  const rule = await client.query(
+    "SELECT nilai FROM aturan_akademik WHERE kode_aturan = 'MAX_SKS'"
+  );
+
+  const maxSks = Number(rule.rows[0]?.nilai ?? 24);
+
+  if (
+    Number(summary.rows[0].total) +
+    Number(subject.rows[0]?.sks || 0) > maxSks
+  ) {
+    throw new Error(`Total SKS melebihi batas ${maxSks} SKS`);
+  }
+}
+
+// Menyesuaikan data input dengan kolom database.
+function normalizeBody(table, input) {
+  const definition = tables[table];
+  const body = {};
+
+  for (const field of definition.fields) {
+    const column = field[0];
+
+    if (Object.prototype.hasOwnProperty.call(input, column)) {
+      let value = input[column];
+
+      if (value === '') value = null;
+
+      if (field[2] === 'number' && value != null) {
+        value = Number(value);
+      }
+
+      if (column === 'status' && value != null) {
+        value = dbStatus(value);
+      }
+
+      body[column] = value;
+    }
+  }
+
+  return body;
+}
+
+// Validasi relasi antar tabel.
+async function validateReferences(table, body, client = pool) {
   const refs = {
-    dosen: [['kode_prodi', 'prodi', 'kode_prodi']],
+    dosen: [
+      ['kode_prodi', 'prodi', 'kode_prodi']
+    ],
 
     mahasiswa: [
       ['kode_prodi', 'prodi', 'kode_prodi'],
       ['id_dosen_pa', 'dosen', 'id_dosen', true]
+    ],
+
+    mata_kuliah: [
+      ['kode_prodi', 'prodi', 'kode_prodi']
     ],
 
     kelas: [
@@ -273,7 +408,8 @@ function validateReferences(table, body) {
 
     krs: [
       ['nim', 'mahasiswa', 'nim'],
-      ['id_periode', 'periode', 'id_periode']
+      ['id_periode', 'periode', 'id_periode'],
+      ['kode_aturan', 'aturan_akademik', 'kode_aturan']
     ],
 
     krs_detail: [
@@ -285,419 +421,434 @@ function validateReferences(table, body) {
   for (const [field, target, targetKey, optional] of refs[table] || []) {
     const value = body[field];
 
-    if ((value === '' || value == null) && optional) continue;
+    if ((value === '' || value == null) && optional) {
+      continue;
+    }
 
-    if (!data[target].some(row => String(row[targetKey]) === String(value))) {
+    if (value == null || value === '') {
+      throw new Error(`${field} wajib diisi`);
+    }
+
+    const result = await client.query(
+      `SELECT 1 FROM ${target} WHERE ${targetKey} = $1`,
+      [value]
+    );
+
+    if (!result.rowCount) {
       throw new Error(`Referensi ${field} tidak ditemukan di ${target}`);
     }
   }
 }
 
-// ==================================================
-// HITUNG TOTAL SKS
-// Total SKS dihitung, bukan disimpan sebagai atribut baru.
-// ==================================================
+// Memeriksa koneksi database.
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
 
-function getKrsSummary(idKrs) {
-  const krs = data.krs.find(row => Number(row.id_krs) === Number(idKrs));
-
-  if (!krs) throw new Error('KRS tidak ditemukan');
-
-  const details = data.krs_detail.filter(
-    row => Number(row.id_krs) === Number(idKrs)
-  );
-
-  const totalSks = details.reduce((total, detail) => {
-    const kelas = data.kelas.find(
-      row => Number(row.id_kelas) === Number(detail.id_kelas)
-    );
-
-    const mk = data.mata_kuliah.find(
-      row => row.kode_mk === kelas?.kode_mk
-    );
-
-    return total + Number(mk?.sks || 0);
-  }, 0);
-
-  return {
-    id_krs: Number(idKrs),
-    mahasiswa: data.mahasiswa.find(row => row.nim === krs.nim)?.nama || krs.nim,
-    status: krs.status,
-    jumlah_mata_kuliah: details.length,
-    total_sks: totalSks
-  };
-}
-
-// ==================================================
-// VALIDASI DETAIL KRS
-// ==================================================
-
-function validateKrsDetail(body, currentKey = null) {
-  const krs = data.krs.find(
-    row => Number(row.id_krs) === Number(body.id_krs)
-  );
-
-  const kelas = data.kelas.find(
-    row => Number(row.id_kelas) === Number(body.id_kelas)
-  );
-
-  if (!krs || !kelas) {
-    throw new Error('KRS atau kelas kuliah tidak ditemukan');
+    res.json({
+      ok: true,
+      database: 'connected',
+      storage: 'postgresql'
+    });
+  } catch (e) {
+    res.status(500).json({
+      ok: false,
+      database: 'disconnected',
+      error: e.message
+    });
   }
-
-  if (krs.status !== 'draft') {
-    throw new Error('Detail hanya bisa diubah saat KRS berstatus draft');
-  }
-
-  if (String(krs.id_periode) !== String(kelas.id_periode)) {
-    throw new Error('Periode kelas tidak sesuai dengan periode KRS');
-  }
-
-  const duplicate = data.krs_detail.some(row =>
-    Number(row.id_krs) === Number(body.id_krs) &&
-    Number(row.id_kelas) === Number(body.id_kelas) &&
-    getKey('krs_detail', row) !== currentKey
-  );
-
-  if (duplicate) {
-    throw new Error('Kelas ini sudah ada dalam KRS');
-  }
-
-  const currentDetails = data.krs_detail.filter(row =>
-    Number(row.id_krs) === Number(body.id_krs) &&
-    getKey('krs_detail', row) !== currentKey
-  );
-
-  const currentTotal = currentDetails.reduce((total, detail) => {
-    const selectedClass = data.kelas.find(
-      row => Number(row.id_kelas) === Number(detail.id_kelas)
-    );
-
-    const mk = data.mata_kuliah.find(
-      row => row.kode_mk === selectedClass?.kode_mk
-    );
-
-    return total + Number(mk?.sks || 0);
-  }, 0);
-
-  const selectedMk = data.mata_kuliah.find(
-    row => row.kode_mk === kelas.kode_mk
-  );
-
-  const rule = data.aturan_akademik.find(row => row.kode === 'MAX_SKS');
-  const maxSks = Number(rule?.nilai ?? 24);
-
-  if (currentTotal + Number(selectedMk?.sks || 0) > maxSks) {
-    throw new Error(`Total SKS melebihi batas ${maxSks} SKS`);
-  }
-}
-
-// ==================================================
-// ENDPOINT DASAR
-// ==================================================
-
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true, database: null, storage: 'memory' });
 });
 
+// Metadata tabel.
 app.get('/api/meta', (req, res) => {
   res.json(tables);
 });
 
-app.get('/api/stats', (req, res) => {
-  const stats = {};
-
-  for (const table of Object.keys(tables)) {
-    stats[table] = data[table].length;
-  }
-
-  res.json(stats);
-});
-
-app.get('/api/options/:table', (req, res) => {
-  const table = req.params.table;
-
-  if (!tables[table]) {
-    return res.status(400).json({ error: 'Tabel tidak dikenal' });
-  }
-
-  res.json(data[table]);
-});
-
-app.get('/api/:table', (req, res) => {
+// Statistik dashboard.
+app.get('/api/stats', async (req, res) => {
   try {
-    res.json(getRows(req.params.table));
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    const stats = {};
+
+    for (const table of Object.keys(tables)) {
+      const result = await pool.query(
+        `SELECT COUNT(*)::int AS total FROM ${table}`
+      );
+
+      stats[table] = result.rows[0].total;
+    }
+
+    res.json(stats);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
-// ==================================================
-// TAMBAH DATA
-// ==================================================
+// Data untuk dropdown.
+app.get('/api/options/:table', async (req, res) => {
+  try {
+    res.json(await all(req.params.table));
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
 
-app.post('/api/:table', (req, res) => {
+// Menampilkan data tabel.
+app.get('/api/:table', async (req, res) => {
+  try {
+    const table = req.params.table;
+    const rows = await all(table);
+
+    res.json(await withLabels(table, rows));
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Menambahkan data.
+app.post('/api/:table', async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const table = req.params.table;
 
-    if (!tables[table]) throw new Error('Tabel tidak dikenal');
-
-    const body = { ...req.body };
-    const definition = tables[table];
-
-    for (const field of definition.fields) {
-      const column = field[0];
-
-      if (field[2] === 'number' && body[column] !== '' && body[column] != null) {
-        body[column] = Number(body[column]);
-      }
+    if (!validTable(table)) {
+      throw new Error('Tabel tidak dikenal');
     }
 
-    if (['dosen', 'kelas', 'krs'].includes(table)) {
-      const pk = definition.pk[0];
+    const body = normalizeBody(table, req.body);
 
-      if (body[pk] == null || body[pk] === '') {
-        body[pk] = ++counters[table];
-      }
+  // Hapus ID otomatis jika belum diisi.
+  for (const field of tables[table].fields) {
+    const column = field[0];
+
+    if (
+      field[2] === 'number' &&
+      !field[3] &&
+      body[column] == null
+    ) {
+      delete body[column];
     }
+  }
 
-    if (table === 'mahasiswa' && !body.created_at) {
-      body.created_at = new Date().toISOString().slice(0, 10);
-    }
+  if (table === 'krs') {
+    body.status = 'Draft';
+  }
 
-    // KRS baru selalu dimulai dengan draft.
-    if (table === 'krs') {
-      body.status = 'draft';
-    }
-
-    for (const field of definition.fields) {
-      if (field[3] && (body[field[0]] == null || body[field[0]] === '')) {
+    for (const field of tables[table].fields) {
+      if (
+        field[3] &&
+        (body[field[0]] == null || body[field[0]] === '')
+      ) {
         throw new Error(`${field[1]} wajib diisi`);
       }
     }
 
-    const key = getKey(table, body);
+    await client.query('BEGIN');
 
-    if (data[table].some(row => getKey(table, row) === key)) {
-      throw new Error('Data dengan kunci tersebut sudah ada');
-    }
-
-    validateReferences(table, body);
+    await validateReferences(table, body, client);
 
     if (table === 'krs_detail') {
-      validateKrsDetail(body);
+      await validateKrsDetail(body, null, client);
     }
 
-    data[table].push(body);
+    const columns = Object.keys(body);
+    const values = columns.map(c => body[c]);
 
-    res.status(201).json(body);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    const sql = columns.length
+      ? `INSERT INTO ${table}
+         (${columns.join(', ')})
+         VALUES (${columns.map((_, i) => `$${i + 1}`).join(', ')})
+         RETURNING *`
+      : `INSERT INTO ${table} DEFAULT VALUES RETURNING *`;
+
+    const result = await client.query(sql, values);
+
+    await client.query('COMMIT');
+
+    const row = {
+      ...result.rows[0],
+      ...(result.rows[0].status
+        ? { status: cleanStatus(result.rows[0].status) }
+        : {})
+    };
+
+    res.status(201).json(row);
+
+  } catch (e) {
+    await client.query('ROLLBACK');
+
+    res.status(400).json({
+      error: e.detail || e.message
+    });
+
+  } finally {
+    client.release();
   }
 });
 
-// ==================================================
-// UBAH DATA
-// ==================================================
+// Mengubah data.
+app.put('/api/:table/:key', async (req, res) => {
+  const client = await pool.connect();
 
-app.put('/api/:table/:key', (req, res) => {
   try {
     const table = req.params.table;
 
-    if (!tables[table]) throw new Error('Tabel tidak dikenal');
+    if (!validTable(table)) {
+      throw new Error('Tabel tidak dikenal');
+    }
 
     const definition = tables[table];
-    const key = decodeURIComponent(req.params.key);
-    const index = data[table].findIndex(row => getKey(table, row) === key);
 
-    if (index < 0) {
-      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    const keyParts = decodeURIComponent(req.params.key).split('~');
+
+    if (keyParts.length !== definition.pk.length) {
+      throw new Error('Format kunci utama tidak valid');
     }
 
-    const body = { ...data[table][index], ...req.body };
+    await client.query('BEGIN');
 
-    for (const field of definition.fields) {
-      const column = field[0];
+    const where = definition.pk
+      .map((col, i) => `${col} = $${i + 1}`)
+      .join(' AND ');
 
-      if (field[2] === 'number' && body[column] !== '' && body[column] != null) {
-        body[column] = Number(body[column]);
-      }
+    const existing = await client.query(
+      `SELECT * FROM ${table} WHERE ${where} FOR UPDATE`,
+      keyParts
+    );
 
-      if (field[3] && (body[column] == null || body[column] === '')) {
-        throw new Error(`${field[1]} wajib diisi`);
-      }
+    if (!existing.rowCount) {
+      await client.query('ROLLBACK');
+
+      return res.status(404).json({
+        error: 'Data tidak ditemukan'
+      });
     }
 
-    validateReferences(table, body);
-
-    if (table === 'krs_detail') {
-      validateKrsDetail(body, getKey(table, data[table][index]));
-    }
+    const body = {
+      ...existing.rows[0],
+      ...normalizeBody(table, req.body)
+    };
 
     if (table === 'krs') {
-      const oldStatus = data.krs[index].status;
-
-      if (oldStatus !== 'draft') {
+      if (String(existing.rows[0].status).toLowerCase() !== 'draft') {
         throw new Error('KRS yang sudah diajukan atau diproses tidak bisa diubah');
       }
 
-      if (body.status !== 'draft') {
+      if (String(body.status).toLowerCase() !== 'draft') {
         throw new Error('Gunakan proses Ajukan KRS untuk mengubah status');
       }
     }
 
-    const newKey = getKey(table, body);
-
-    if (data[table].some((row, i) => i !== index && getKey(table, row) === newKey)) {
-      throw new Error('Kunci utama sudah digunakan');
+    for (const field of definition.fields) {
+      if (
+        field[3] &&
+        (body[field[0]] == null || body[field[0]] === '')
+      ) {
+        throw new Error(`${field[1]} wajib diisi`);
+      }
     }
 
-    data[table][index] = body;
+    await validateReferences(table, body, client);
 
-    res.json(body);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    if (table === 'krs_detail') {
+      await validateKrsDetail(body, keyParts.join('~'), client);
+    }
+
+    const updateCols = Object.keys(
+      normalizeBody(table, req.body)
+    ).filter(c => !definition.pk.includes(c));
+
+    let result;
+
+    if (!updateCols.length) {
+      result = { rows: [existing.rows[0]] };
+    } else {
+      const values = updateCols.map(c => body[c]);
+
+      const set = updateCols
+        .map((c, i) => `${c} = $${keyParts.length + i + 1}`)
+        .join(', ');
+
+      result = await client.query(
+        `UPDATE ${table}
+         SET ${set}
+         WHERE ${where}
+         RETURNING *`,
+        [...keyParts, ...values]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      ...result.rows[0],
+      ...(result.rows[0].status
+        ? { status: cleanStatus(result.rows[0].status) }
+        : {})
+    });
+
+  } catch (e) {
+    await client.query('ROLLBACK');
+
+    res.status(400).json({
+      error: e.detail || e.message
+    });
+
+  } finally {
+    client.release();
   }
 });
 
-// ==================================================
-// HAPUS DATA
-// ==================================================
-
-app.delete('/api/:table/:key', (req, res) => {
+// Menghapus data.
+app.delete('/api/:table/:key', async (req, res) => {
   try {
     const table = req.params.table;
 
-    if (!tables[table]) throw new Error('Tabel tidak dikenal');
-
-    const key = decodeURIComponent(req.params.key);
-    const index = data[table].findIndex(row => getKey(table, row) === key);
-
-    if (index < 0) {
-      return res.status(404).json({ error: 'Data tidak ditemukan' });
+    if (!validTable(table)) {
+      throw new Error('Tabel tidak dikenal');
     }
 
-    const row = data[table][index];
+    const definition = tables[table];
 
-    if (table === 'krs_detail') {
-      const krs = data.krs.find(item => Number(item.id_krs) === Number(row.id_krs));
+    const keyParts = decodeURIComponent(req.params.key).split('~');
 
-      if (krs && krs.status !== 'draft') {
-        throw new Error('Detail hanya bisa dihapus saat KRS berstatus draft');
-      }
+    if (keyParts.length !== definition.pk.length) {
+      throw new Error('Format kunci utama tidak valid');
     }
 
-    const references = {
-      mahasiswa: data.krs.some(item => item.nim === row.nim),
+    const where = definition.pk
+      .map((col, i) => `${col} = $${i + 1}`)
+      .join(' AND ');
 
-      prodi:
-        data.dosen.some(item => item.kode_prodi === row.kode_prodi) ||
-        data.mahasiswa.some(item => item.kode_prodi === row.kode_prodi),
+    const result = await pool.query(
+      `DELETE FROM ${table} WHERE ${where} RETURNING *`,
+      keyParts
+    );
 
-      dosen:
-        data.kelas.some(item => Number(item.id_dosen) === Number(row.id_dosen)) ||
-        data.mahasiswa.some(item => Number(item.id_dosen_pa) === Number(row.id_dosen)),
-
-      periode:
-        data.krs.some(item => item.id_periode === row.id_periode) ||
-        data.kelas.some(item => item.id_periode === row.id_periode),
-
-      mata_kuliah: data.kelas.some(item => item.kode_mk === row.kode_mk),
-
-      kelas: data.krs_detail.some(item => Number(item.id_kelas) === Number(row.id_kelas)),
-
-      krs: data.krs_detail.some(item => Number(item.id_krs) === Number(row.id_krs))
-    };
-
-    if (references[table]) {
-      throw new Error('Data masih digunakan oleh relasi lain');
+    if (!result.rowCount) {
+      return res.status(404).json({
+        error: 'Data tidak ditemukan'
+      });
     }
-
-    data[table].splice(index, 1);
 
     res.json({ ok: true });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+
+  } catch (e) {
+    const message = e.code === '23503'
+      ? 'Data masih digunakan oleh relasi lain'
+      : (e.detail || e.message);
+
+    res.status(400).json({ error: message });
   }
 });
 
-// ==================================================
-// RINGKASAN SKS KRS
-// ==================================================
-
-app.get('/api/krs/:id/summary', (req, res) => {
+// Ringkasan KRS.
+app.get('/api/krs/:id/summary', async (req, res) => {
   try {
-    res.json(getKrsSummary(req.params.id));
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+    res.json(await getSummary(req.params.id));
+  } catch (e) {
+    res.status(404).json({ error: e.message });
   }
 });
 
-// ==================================================
-// AJUKAN KRS
-// ==================================================
+// Mengajukan KRS.
+app.post('/api/krs/:id/submit', async (req, res) => {
+  const client = await pool.connect();
 
-app.post('/api/krs/:id/submit', (req, res) => {
   try {
-    const idKrs = Number(req.params.id);
-    const krs = data.krs.find(row => Number(row.id_krs) === idKrs);
+    await client.query('BEGIN');
 
-    if (!krs) throw new Error('KRS tidak ditemukan');
+    const result = await client.query(
+      'SELECT * FROM krs WHERE id_krs = $1 FOR UPDATE',
+      [req.params.id]
+    );
 
-    if (krs.status !== 'draft') {
+    const krs = result.rows[0];
+
+    if (!krs) {
+      throw new Error('KRS tidak ditemukan');
+    }
+
+    if (String(krs.status).toLowerCase() !== 'draft') {
       throw new Error('KRS hanya bisa diajukan saat berstatus draft');
     }
 
-    const details = data.krs_detail.filter(
-      row => Number(row.id_krs) === idKrs
-    );
+    const details = await client.query(`
+      SELECT kd.id_kelas, kl.id_periode
+      FROM krs_detail kd
+      JOIN kelas kl ON kl.id_kelas = kd.id_kelas
+      WHERE kd.id_krs = $1
+    `, [req.params.id]);
 
-    if (details.length === 0) {
+    if (!details.rowCount) {
       throw new Error('Tambahkan minimal satu kelas sebelum mengajukan KRS');
     }
 
-    for (const detail of details) {
-      const kelas = data.kelas.find(
-        row => Number(row.id_kelas) === Number(detail.id_kelas)
-      );
-
-      if (!kelas) throw new Error('Kelas dalam Detail KRS tidak ditemukan');
-
-      if (String(kelas.id_periode) !== String(krs.id_periode)) {
-        throw new Error('Periode kelas tidak sesuai dengan periode KRS');
-      }
+    if (
+      details.rows.some(
+        row => String(row.id_periode) !== String(krs.id_periode)
+      )
+    ) {
+      throw new Error('Periode kelas tidak sesuai dengan periode KRS');
     }
 
-    const summary = getKrsSummary(idKrs);
-    const rule = data.aturan_akademik.find(row => row.kode === 'MAX_SKS');
-    const maxSks = Number(rule?.nilai ?? 24);
+    const summary = await getSummary(req.params.id, client);
+
+    const rule = await client.query(
+      "SELECT nilai FROM aturan_akademik WHERE kode_aturan = 'MAX_SKS'"
+    );
+
+    const maxSks = Number(rule.rows[0]?.nilai ?? 24);
 
     if (summary.total_sks > maxSks) {
-      throw new Error(`Total SKS ${summary.total_sks} melebihi batas ${maxSks} SKS`);
+      throw new Error(
+        `Total SKS ${summary.total_sks} melebihi batas ${maxSks} SKS`
+      );
     }
 
-    krs.status = 'diajukan';
+    await client.query(
+      "UPDATE krs SET status = 'Diajukan' WHERE id_krs = $1",
+      [req.params.id]
+    );
+
+    await client.query('COMMIT');
 
     res.json({
       ok: true,
       message: 'KRS berhasil diajukan',
-      ...getKrsSummary(idKrs)
+      ...summary,
+      status: 'diajukan'
     });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+
+  } catch (e) {
+    await client.query('ROLLBACK');
+
+    res.status(400).json({
+      error: e.detail || e.message
+    });
+
+  } finally {
+    client.release();
   }
 });
 
-// ==================================================
-// HALAMAN UTAMA
-// ==================================================
-
+// Mengarahkan halaman selain API ke index.html.
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+  res.sendFile(
+    path.join(__dirname, '..', 'public', 'index.html')
+  );
 });
 
+// Menjalankan server.
 const port = Number(process.env.PORT || 3001);
 
-app.listen(port, () => {
-  console.log(`SIKRS berjalan di http://localhost:${port} (tanpa database)`);
+app.listen(port, async () => {
+  console.log(`SIKRS berjalan di http://localhost:${port}`);
+
+  try {
+    await pool.query('SELECT 1');
+    console.log('Koneksi PostgreSQL berhasil!');
+  } catch (error) {
+    console.error('Koneksi database gagal:', error.message);
+  }
 });
