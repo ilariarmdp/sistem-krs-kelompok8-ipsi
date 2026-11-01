@@ -1,11 +1,26 @@
 const express = require('express');
 const path = require('path');
+const session = require('express-session');
 const pool = require('./db');
+const auth = require('./auth');
+const access = require('./access');
 
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'public')));
 
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'dev-secret-ganti-di-env',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 8 }
+}));
+
+app.use('/api/auth', auth.router);
+app.use('/api', auth.requireApiLogin);
+app.use('/api', access.guard);
+app.use(auth.requirePage);
+
+app.use(express.static(path.join(__dirname, '..', 'public')));
 // Metadata mengikuti struktur database modul_krs.
 const tables = {
   prodi: {

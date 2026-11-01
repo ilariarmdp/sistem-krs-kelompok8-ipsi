@@ -1,5 +1,12 @@
 const $ = (selector) => document.querySelector(selector);
 
+const _origFetch = window.fetch;
+window.fetch = async (...args) => {
+  const res = await _origFetch(...args);
+  if (res.status === 401) location.href = '/login.html';
+  return res;
+};
+
 let meta = {};
 let current = 'dashboard';
 let rows = [];
