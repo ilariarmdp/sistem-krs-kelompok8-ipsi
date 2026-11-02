@@ -1,5 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 
+// Jika sesi habis (401), arahkan ke halaman login.
 const _origFetch = window.fetch;
 window.fetch = async (...args) => {
   const res = await _origFetch(...args);
@@ -70,6 +71,8 @@ const welcomeText = {
   }
 };
 
+const gradeOptions = ['', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'E'];
+
 function canWrite(table) {
   const role = currentUser?.role;
   if (role === 'admin') return true;
@@ -78,6 +81,8 @@ function canWrite(table) {
 
 const canSubmitKrs = () =>
   ['admin', 'mahasiswa'].includes(currentUser?.role);
+
+const canInputGrade = () => currentUser?.role === 'dosen';
 
 function labelOf(table) {
   const role = currentUser?.role;
@@ -117,7 +122,7 @@ async function api(url, options = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw Error(data.error || 'Permintaan gagal');
+    throw new Error(data.error || 'Permintaan gagal');
   }
 
   return data;
@@ -129,13 +134,37 @@ function initials(name) {
   return words[0].slice(0, 2).toUpperCase();
 }
 
+// Muat ulang halaman yang sedang dibuka (dashboard atau tabel).
+async function refreshCurrent() {
+  if (current === 'dashboard') {
+    await dashboard();
+  } else {
+    await loadRows();
+  }
+}
+
 // ---------------------------------------------------------------
 //  Inisialisasi
 // ---------------------------------------------------------------
+// Server bisa memakai /api/me atau /api/auth/me.
+async function fetchCurrentUser() {
+  try {
+    return await api('/api/me');
+  } catch (error) {
+    return await api('/api/auth/me');
+  }
+}
+
+// Pasang event handler hanya jika elemennya ada di halaman.
+function on(selector, prop, handler) {
+  const element = $(selector);
+  if (element) element[prop] = handler;
+}
+
 async function init() {
   try {
     meta = await api('/api/meta');
-    currentUser = await api('/api/me');
+    currentUser = await fetchCurrentUser();
     await api('/api/health');
 
     $('#conn').textContent = 'Terhubung';
@@ -171,32 +200,59 @@ async function init() {
   $('#record-form').onsubmit = saveForm;
   $('#logout').onclick = logout;
 
-  document.addEventListener('click', (event) => {
-    const moduleButton = event.target.closest('[data-module]');
-    if (moduleButton) {
-      openTable(moduleButton.dataset.module);
-      return;
-    }
+  // Ganti password
+  on('#change-password', 'onclick', openPasswordForm);
+  on('#password-close', 'onclick', closePasswordForm);
+  on('#password-cancel', 'onclick', closePasswordForm);
+  on('#password-form', 'onsubmit', changePassword);
 
-    const submitButton = event.target.closest('[data-submit-krs]');
-    if (submitButton) {
-      submitKrs(submitButton.dataset.submitKrs);
-      return;
-    }
-
-    const editButton = event.target.closest('[data-edit]');
-    if (editButton) {
-      openForm(editButton.dataset.edit);
-      return;
-    }
-
-    const deleteButton = event.target.closest('[data-delete]');
-    if (deleteButton) {
-      deleteRow(deleteButton.dataset.delete);
-    }
-  });
+  document.addEventListener('click', handleClick);
 
   await dashboard();
+}
+
+// Satu penangan klik untuk semua tombol dinamis.
+function handleClick(event) {
+  const moduleButton = event.target.closest('[data-module]');
+  if (moduleButton) {
+    openTable(moduleButton.dataset.module);
+    return;
+  }
+
+  const submitButton = event.target.closest('[data-submit-krs]');
+  if (submitButton) {
+    submitKrs(submitButton.dataset.submitKrs);
+    return;
+  }
+
+  const decisionButton = event.target.closest('[data-krs-decision]');
+  if (decisionButton) {
+    decideKrs(
+      decisionButton.dataset.krsDecision,
+      decisionButton.dataset.status
+    );
+    return;
+  }
+
+  const gradeButton = event.target.closest('[data-save-grade]');
+  if (gradeButton) {
+    saveGrade(
+      gradeButton.dataset.saveGrade,
+      gradeButton.dataset.gradeClass
+    );
+    return;
+  }
+
+  const editButton = event.target.closest('[data-edit]');
+  if (editButton) {
+    openForm(editButton.dataset.edit);
+    return;
+  }
+
+  const deleteButton = event.target.closest('[data-delete]');
+  if (deleteButton) {
+    deleteRow(deleteButton.dataset.delete);
+  }
 }
 
 // Sidebar menyesuaikan peran.
@@ -217,8 +273,9 @@ function buildMenu() {
     </button>
   `).join('');
 
-  document.querySelectorAll('[data-page="dashboard"]')
-    .forEach((button) => { button.onclick = dashboard; });
+  document.querySelectorAll('[data-page="dashboard"]').forEach((button) => {
+    button.onclick = dashboard;
+  });
 
   document.querySelectorAll('[data-table]').forEach((button) => {
     button.onclick = () => openTable(button.dataset.table);
@@ -241,9 +298,7 @@ async function logout() {
 // ---------------------------------------------------------------
 function statCard(label, value, table) {
   const tag = table ? 'button' : 'div';
-  const attrs = table
-    ? ` type="button" data-module="${esc(table)}"`
-    : '';
+  const attrs = table ? ` type="button" data-module="${esc(table)}"` : '';
 
   return `
     <${tag} class="stat-card"${attrs}>
@@ -333,6 +388,7 @@ async function renderMyKrs(panel) {
 
     const items = await Promise.all(list.map(async (k) => {
       let sks = '—';
+
       try {
         const summary = await api(
           `/api/krs/${encodeURIComponent(k.id_krs)}/summary`
@@ -341,6 +397,7 @@ async function renderMyKrs(panel) {
       } catch (error) {
         // Ringkasan gagal dimuat: tampilkan tanda strip.
       }
+
       return { ...k, sks };
     }));
 
@@ -353,7 +410,7 @@ async function renderMyKrs(panel) {
         <td><span class="badge">${esc(nice(k.status))}</span></td>
         <td>
           ${
-            k.status === 'draft'
+            String(k.status).toLowerCase() === 'draft'
               ? `<button class="mini" data-submit-krs="${esc(k.id_krs)}">Ajukan</button>`
               : '—'
           }
@@ -379,8 +436,12 @@ async function renderMyKrs(panel) {
           <table>
             <thead>
               <tr>
-                <th>ID KRS</th><th>Periode</th><th>Tanggal Isi</th>
-                <th>Total SKS</th><th>Status</th><th>Aksi</th>
+                <th>ID KRS</th>
+                <th>Periode</th>
+                <th>Tanggal Isi</th>
+                <th>Total SKS</th>
+                <th>Status</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody>${body}</tbody>
@@ -446,50 +507,74 @@ async function loadRows() {
   }
 }
 
+// Kolom foreign key ditampilkan dengan label yang mudah dibaca.
+const displayLabels = {
+  dosen: { kode_prodi: 'label_prodi' },
+  mahasiswa: { kode_prodi: 'label_prodi', id_dosen_pa: 'label_dosen_pa' },
+  kelas: {
+    kode_mk: 'label_mk',
+    id_periode: 'label_periode',
+    id_dosen: 'label_dosen'
+  },
+  krs: { nim: 'label_mahasiswa', id_periode: 'label_periode' },
+  krs_detail: { id_krs: 'label_mahasiswa', id_kelas: 'label_mk' }
+};
+
 function displayValue(table, field, row) {
   const [column] = field;
+  const labelColumn = displayLabels[table]?.[column];
 
-  if (table === 'dosen' && column === 'kode_prodi') {
-    return row.label_prodi || row[column];
+  return labelColumn ? (row[labelColumn] || row[column]) : row[column];
+}
+
+// Tombol aksi untuk satu baris, sesuai peran dan status data.
+function buildActions(row, key) {
+  const role = currentUser?.role;
+  const status = String(row.status ?? '').toLowerCase();
+  const parts = [];
+
+  if (current === 'krs_detail' && canInputGrade()) {
+    const selectedGrade = row.nilai_huruf || '';
+    const gradeKey = `${row.id_krs}~${row.id_kelas}`;
+
+    parts.push(`
+      <select data-grade-input="${esc(gradeKey)}">
+        ${gradeOptions.map((grade) => `
+          <option value="${esc(grade)}" ${grade === selectedGrade ? 'selected' : ''}>${grade || 'Pilih nilai'}</option>
+        `).join('')}
+      </select>
+      <button class="mini" data-save-grade="${esc(row.id_krs)}"
+        data-grade-class="${esc(row.id_kelas)}">Simpan Nilai</button>
+    `);
   }
 
-  if (table === 'mahasiswa' && column === 'kode_prodi') {
-    return row.label_prodi || row[column];
+  if (current === 'krs') {
+    if (role === 'dosen' && status === 'diajukan') {
+      parts.push(`
+        <button class="mini" data-krs-decision="${esc(row.id_krs)}"
+          data-status="disetujui">Setujui</button>
+        <button class="mini danger" data-krs-decision="${esc(row.id_krs)}"
+          data-status="ditolak">Tolak</button>
+      `);
+    }
+
+    if (canSubmitKrs() && status === 'draft') {
+      parts.push(
+        `<button class="mini" data-submit-krs="${esc(row.id_krs)}">Ajukan</button>`
+      );
+    }
   }
 
-  if (table === 'mahasiswa' && column === 'id_dosen_pa') {
-    return row.label_dosen_pa || row[column];
+  if (canWrite(current)) {
+    parts.push(`
+      <button class="mini" data-edit="${esc(key)}">Ubah</button>
+      <button class="mini danger" data-delete="${esc(key)}">Hapus</button>
+    `);
   }
 
-  if (table === 'kelas' && column === 'kode_mk') {
-    return row.label_mk || row[column];
-  }
+  if (!parts.length) return '<td>—</td>';
 
-  if (table === 'kelas' && column === 'id_periode') {
-    return row.label_periode || row[column];
-  }
-
-  if (table === 'kelas' && column === 'id_dosen') {
-    return row.label_dosen || row[column];
-  }
-
-  if (table === 'krs' && column === 'nim') {
-    return row.label_mahasiswa || row[column];
-  }
-
-  if (table === 'krs' && column === 'id_periode') {
-    return row.label_periode || row[column];
-  }
-
-  if (table === 'krs_detail' && column === 'id_krs') {
-    return row.label_mahasiswa || row[column];
-  }
-
-  if (table === 'krs_detail' && column === 'id_kelas') {
-    return row.label_mk || row[column];
-  }
-
-  return row[column];
+  return `<td><div class="action-group">${parts.join('')}</div></td>`;
 }
 
 function renderRows() {
@@ -514,27 +599,23 @@ function renderRows() {
         ['label_sks', 'SKS'],
         ['nilai_huruf', 'Nilai Huruf']
       ]
-    : definition.fields.filter(
-        (field) => field[0] !== 'created_at'
-      );
+    : definition.fields.filter((field) => field[0] !== 'created_at');
 
-  const writable = canWrite(current);
-  const canSubmit = current === 'krs' && canSubmitKrs();
-  const showActions = writable || canSubmit;
+  const showActions =
+    canWrite(current) ||
+    (current === 'krs' &&
+      (canSubmitKrs() || currentUser?.role === 'dosen')) ||
+    (isKrsDetail && canInputGrade());
 
   $('#thead').innerHTML = `
     <tr>
-      ${visibleFields.map((field) =>
-        `<th>${esc(field[1])}</th>`
-      ).join('')}
+      ${visibleFields.map((field) => `<th>${esc(field[1])}</th>`).join('')}
       ${showActions ? '<th>Aksi</th>' : ''}
     </tr>
   `;
 
   $('#tbody').innerHTML = filteredRows.map((row) => {
-    const key = definition.pk
-      .map((column) => row[column])
-      .join('~');
+    const key = definition.pk.map((column) => row[column]).join('~');
 
     const cells = visibleFields.map((field) => {
       let value;
@@ -553,73 +634,77 @@ function renderRows() {
         value = displayValue(current, field, row);
       }
 
-      return `
-        <td>
-          ${
-            field[0] === 'status'
-              ? `<span class="badge">${esc(nice(value))}</span>`
-              : esc(nice(value))
-          }
-        </td>
-      `;
+      return `<td>${esc(nice(value))}</td>`;
     }).join('');
 
-    const submitButton =
-      canSubmit && row.status === 'draft'
-        ? `
-          <button class="mini" data-submit-krs="${esc(row.id_krs)}">
-            Ajukan
-          </button>
-        `
-        : '';
-
-    const editDelete = writable
-      ? `
-        <button class="mini" data-edit="${esc(key)}">Ubah</button>
-        <button class="mini danger" data-delete="${esc(key)}">Hapus</button>
-      `
-      : '';
-
-    const actionCell = showActions
-      ? `
-        <td>
-          <div class="row-actions">
-            ${editDelete}
-            ${submitButton}
-          </div>
-        </td>
-      `
-      : '';
-
-    return `<tr>${cells}${actionCell}</tr>`;
-  }).join('') || `
-    <tr>
-      <td colspan="${visibleFields.length + (showActions ? 1 : 0)}"
-          style="text-align:center;padding:30px;color:#8b98aa">
-        Tidak ada data yang cocok.
-      </td>
-    </tr>
-  `;
-
-  $('#row-count').textContent =
-    `${filteredRows.length} dari ${rows.length} data`;
+    return `<tr>${cells}${showActions ? buildActions(row, key) : ''}</tr>`;
+  }).join('');
 }
 
+// ---------------------------------------------------------------
+//  Aksi KRS dan nilai
+// ---------------------------------------------------------------
 async function submitKrs(krsId) {
-  if (!confirm(`Yakin ingin mengajukan KRS ID ${krsId}?`)) {
-    return;
-  }
+  if (!confirm(`Yakin ingin mengajukan KRS ID ${krsId}?`)) return;
 
   try {
-    await api(`/api/krs/${encodeURIComponent(krsId)}/submit`, {
+    await api(`/api/krs/${encodeURIComponent(krsId)}/ajukan`, {
       method: 'POST'
     });
 
     toast('KRS berhasil diajukan!');
-    if (current === 'dashboard') await dashboard();
-    else await loadRows();
+    await refreshCurrent();
   } catch (error) {
     toast('Gagal mengajukan KRS: ' + error.message);
+  }
+}
+
+// Keputusan persetujuan KRS oleh dosen.
+async function decideKrs(krsId, status) {
+  const action = status === 'disetujui' ? 'menyetujui' : 'menolak';
+
+  if (!confirm(`Yakin ingin ${action} KRS ID ${krsId}?`)) return;
+
+  try {
+    const result = await api(
+      `/api/krs/${encodeURIComponent(krsId)}/persetujuan`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ status })
+      }
+    );
+
+    toast(result.message || `KRS berhasil ${status}`);
+    await refreshCurrent();
+  } catch (error) {
+    toast('Gagal memproses keputusan KRS: ' + error.message);
+  }
+}
+
+async function saveGrade(idKrs, idKelas) {
+  const gradeKey = `${idKrs}~${idKelas}`;
+
+  const input = [...document.querySelectorAll('[data-grade-input]')]
+    .find((element) => element.dataset.gradeInput === gradeKey);
+
+  if (!input) {
+    toast('Pilihan nilai tidak ditemukan.');
+    return;
+  }
+
+  try {
+    const result = await api(
+      `/api/krs-detail/${encodeURIComponent(idKrs)}/${encodeURIComponent(idKelas)}/nilai`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ nilai_huruf: input.value })
+      }
+    );
+
+    toast(result.message || 'Nilai berhasil disimpan.');
+    await loadRows();
+  } catch (error) {
+    toast('Gagal menyimpan nilai: ' + error.message);
   }
 }
 
@@ -661,13 +746,18 @@ async function openForm(key = null) {
       labelColumn
     ] = field;
 
-    // Nilai huruf hanya boleh diisi oleh peran selain mahasiswa.
+    // Mahasiswa tidak boleh mengisi nilai.
     if (column === 'nilai_huruf' && currentUser.role === 'mahasiswa') {
       continue;
     }
 
-    const isPrimaryKey = definition.pk.includes(column);
+    // created_at hanya relevan saat mengubah data.
+    if (column === 'created_at' && !key) continue;
 
+    const isPrimaryKey = definition.pk.includes(column);
+    const requiredMark = required ? ' *' : '';
+
+    // Pilihan dari tabel lain (foreign key).
     if (type === 'fk') {
       let list = [];
 
@@ -677,7 +767,6 @@ async function openForm(key = null) {
         console.error('Gagal memuat pilihan:', error.message);
       }
 
-      // Mahasiswa: NIM otomatis terisi dengan NIM sendiri.
       const defaultValue =
         currentUser.role === 'mahasiswa' && column === 'nim'
           ? currentUser.ref
@@ -687,17 +776,11 @@ async function openForm(key = null) {
 
       inputs.push(`
         <div class="field">
-          <label>${esc(label)}${required ? ' *' : ''}</label>
+          <label>${esc(label)}${requiredMark}</label>
           <select name="${esc(column)}" ${required ? 'required' : ''}>
             <option value="">Pilih ${esc(label.toLowerCase())}</option>
             ${list.map((item) => `
-              <option
-                value="${esc(item[valueColumn])}"
-                ${selectedValue === String(item[valueColumn]) ? 'selected' : ''}
-              >
-                ${esc(item[valueColumn])} —
-                ${esc(item[labelColumn] ?? item[valueColumn])}
-              </option>
+              <option value="${esc(item[valueColumn])}" ${selectedValue === String(item[valueColumn]) ? 'selected' : ''}>${esc(item[valueColumn])} — ${esc(item[labelColumn] ?? item[valueColumn])}</option>
             `).join('')}
           </select>
         </div>
@@ -706,25 +789,18 @@ async function openForm(key = null) {
       continue;
     }
 
-    if (column === 'created_at' && !key) continue;
-
+    // Pilihan tetap.
     if (type === 'select') {
+      const selectedValue = String(
+        row?.[column] ?? (column === 'status' ? 'aktif' : '')
+      );
+
       inputs.push(`
         <div class="field">
-          <label>${esc(label)}${required ? ' *' : ''}</label>
+          <label>${esc(label)}${requiredMark}</label>
           <select name="${esc(column)}" ${required ? 'required' : ''}>
             ${options.map((option) => `
-              <option
-                value="${esc(option)}"
-                ${
-                  String(
-                    row?.[column] ??
-                    (column === 'status' ? 'aktif' : '')
-                  ) === String(option) ? 'selected' : ''
-                }
-              >
-                ${esc(option || '(kosong)')}
-              </option>
+              <option value="${esc(option)}" ${selectedValue === String(option) ? 'selected' : ''}>${esc(option || '(kosong)')}</option>
             `).join('')}
           </select>
         </div>
@@ -733,21 +809,20 @@ async function openForm(key = null) {
       continue;
     }
 
+    // Input biasa.
     let value = row?.[column] ??
-      (column === 'tgl_isi'
-        ? new Date().toISOString().slice(0, 10)
-        : '');
+      (column === 'tgl_isi' ? new Date().toISOString().slice(0, 10) : '');
 
     if (type === 'date' && value) {
       value = String(value).slice(0, 10);
     }
 
-    const readOnly = isPrimaryKey && key;
-    const disabled = isPrimaryKey && !key && type === 'number';
+    const readOnly = isPrimaryKey && Boolean(key);
+    const autoId = isPrimaryKey && !key && type === 'number';
 
     const hint = readOnly
       ? 'Kunci utama tidak diubah'
-      : disabled
+      : autoId
         ? 'ID dibuat otomatis oleh sistem'
         : required
           ? 'Wajib diisi'
@@ -755,13 +830,13 @@ async function openForm(key = null) {
 
     inputs.push(`
       <div class="field">
-        <label>${esc(label)}${required ? ' *' : ''}</label>
+        <label>${esc(label)}${requiredMark}</label>
         <input
           name="${esc(column)}"
           type="${esc(type)}"
           value="${esc(value)}"
           ${required ? 'required' : ''}
-          ${readOnly || disabled ? 'readonly' : ''}
+          ${readOnly || autoId ? 'readonly' : ''}
           ${type === 'number' ? 'step="1"' : ''}
           placeholder="${esc(hint)}"
         >
@@ -784,23 +859,15 @@ async function saveForm(event) {
 
   const definition = meta[current];
   const formData = new FormData(event.target);
-  const body = {};
+  const body = Object.fromEntries(formData.entries());
 
-  for (const [key, value] of formData.entries()) {
-    body[key] = value === '' ? '' : value;
-  }
-
-  for (const field of definition.fields) {
-    const [column, , type] = field;
-
+  for (const [column, , type] of definition.fields) {
     if (!(column in body)) continue;
-
-    if (type === 'number' && body[column] !== '') {
-      body[column] = Number(body[column]);
-    }
 
     if (body[column] === '') {
       body[column] = null;
+    } else if (type === 'number') {
+      body[column] = Number(body[column]);
     }
   }
 
@@ -833,12 +900,11 @@ async function saveForm(event) {
 async function deleteRow(key) {
   if (!canWrite(current)) return;
 
-  if (!confirm(
+  const message =
     'Yakin ingin menghapus data ini? ' +
-    'Penghapusan dapat ditolak jika data masih dipakai oleh relasi lain.'
-  )) {
-    return;
-  }
+    'Penghapusan dapat ditolak jika data masih dipakai oleh relasi lain.';
+
+  if (!confirm(message)) return;
 
   try {
     await api(`/api/${current}/${encodeURIComponent(key)}`, {
@@ -849,6 +915,50 @@ async function deleteRow(key) {
     await loadRows();
   } catch (error) {
     toast('Tidak dapat menghapus: ' + error.message);
+  }
+}
+
+// ---------------------------------------------------------------
+//  Ganti password
+// ---------------------------------------------------------------
+function openPasswordForm() {
+  $('#password-form').reset();
+  $('#password-modal').classList.remove('hidden');
+  $('#current-password').focus();
+}
+
+function closePasswordForm() {
+  $('#password-modal').classList.add('hidden');
+  $('#password-form').reset();
+}
+
+async function changePassword(event) {
+  event.preventDefault();
+
+  const currentPassword = $('#current-password').value;
+  const newPassword = $('#new-password').value;
+  const confirmPassword = $('#confirm-password').value;
+
+  if (newPassword !== confirmPassword) {
+    toast('Konfirmasi password baru tidak cocok.');
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    toast('Password baru minimal 8 karakter.');
+    return;
+  }
+
+  try {
+    const result = await api('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+
+    toast(result.message || 'Password berhasil diubah.');
+    closePasswordForm();
+  } catch (error) {
+    toast('Gagal mengganti password: ' + error.message);
   }
 }
 
