@@ -86,52 +86,24 @@ async function guard(req, res, next) {
         return deny(res);
       }
 
-      // Mahasiswa hanya boleh mengajukan KRS miliknya sendiri.
-      if (
-        table === 'krs' &&
-        key &&
-        action === 'ajukan' &&
-        method === 'POST'
-      ) {
-        return owns(key) ? next() : deny(res);
-      }
-
-      // KRS dibuat dan dikelola admin.
+      // Pengajuan KRS dan pemilihan mata kuliah hanya lewat /api/paket/*
+      // (di sana ada validasi SKS, kuota, periode, dan status).
+      // Rute umum di bawah sengaja ditutup agar validasi tidak bisa dilewati.
       if (table === 'krs') {
         return deny(res, 'KRS dibuat dan dikelola oleh admin');
       }
 
-      // Mahasiswa boleh mengelola pilihan kelas, tetapi tidak boleh mengisi nilai.
       if (table === 'krs_detail') {
-        delete req.body.nilai_huruf;
-
-        if (method === 'POST') {
-          return owns(req.body.id_krs) ? next() : deny(res);
-        }
-
-        if (method === 'PUT' || method === 'DELETE') {
-          const idKrs = decodeURIComponent(key || '').split('~')[0];
-
-          if (!owns(idKrs)) {
-            return deny(res);
-          }
-
-          if (method === 'PUT' && req.body.id_krs && !owns(req.body.id_krs)) {
-            return deny(res);
-          }
-
-          return next();
-        }
+        return deny(res, 'Pilihan mata kuliah diubah lewat dashboard');
       }
 
       return deny(res);
     }
 
-        // =========================
+    // =========================
     // DOSEN
     // =========================
     if (u.role === 'dosen') {
-      
       const idDosen = Number(ref);
 
       // Dosen PA boleh menyetujui atau menolak KRS mahasiswa bimbingannya.
@@ -278,10 +250,15 @@ async function guard(req, res, next) {
         return next();
       }
 
+      // Dosen pengampu hanya melihat baris kelasnya pada KRS yang sudah
+      // disetujui (KRS draft/diajukan milik non-bimbingan tidak ikut terlihat).
       if (target === 'krs_detail') {
         filterRows(res, row =>
           krsIds.includes(Number(row.id_krs)) ||
-          kelasIds.includes(Number(row.id_kelas))
+          (
+            kelasIds.includes(Number(row.id_kelas)) &&
+            krsKelas.includes(Number(row.id_krs))
+          )
         );
         return next();
       }

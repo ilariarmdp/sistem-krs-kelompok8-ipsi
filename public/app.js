@@ -1179,12 +1179,65 @@ function closeForm() {
   editing = null;
 }
 
+function validateForm(definition, body, table) {
+  for (const [column, label, type, required, options] of definition.fields) {
+    // STATUS KRS tidak diedit melalui form CRUD
+    if (table === 'krs' && column === 'status') continue;
+
+    const value = body[column];
+
+    // 1. EXISTENCE CHECK
+    if (required && (value == null || String(value).trim() === '')) {
+      return `${label} wajib diisi`;
+    }
+
+    // Kolom opsional yang kosong tidak perlu diperiksa lebih lanjut
+    if (value == null || value === '') continue;
+
+    // Validasi khusus NIM
+    if (table === 'mahasiswa' && column === 'nim') {
+      if (!/^\d+$/.test(value)) {
+        return 'NIM hanya boleh berisi angka';
+      }
+    }
+    // 2. DATA-TYPE CHECK
+    if (type === 'number' && !Number.isFinite(value)) {
+      return `${label} harus berupa angka`;
+    }
+
+    if (type === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return `Format ${label} tidak valid`;
+    }
+
+    // 3. DOMAIN CHECK
+    if (type === 'select' && !options.includes(value)) {
+      return `Pilihan ${label} tidak valid`;
+    }
+
+    if (type === 'number' && value < 0) {
+      return `${label} tidak boleh bernilai negatif`;
+    }
+
+    // 4. FORMAT CHECK
+    if (type === 'email') {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailPattern.test(value)) {
+        return `Format ${label} tidak valid`;
+      }
+    }
+  }
+
+  return null;
+}
+
 async function saveForm(event) {
   event.preventDefault();
 
   const definition = meta[current];
   const formData = new FormData(event.target);
   const body = Object.fromEntries(formData.entries());
+  
 
   for (const [column, , type] of definition.fields) {
     if (!(column in body)) continue;
@@ -1195,6 +1248,25 @@ async function saveForm(event) {
       body[column] = Number(body[column]);
     }
   }
+
+const validationError = validateForm(definition, body, current);
+
+if (validationError) {
+  $('#notice').textContent = validationError;
+  $('#notice').classList.remove('hidden');
+  toast(validationError);
+  return;
+}
+
+// Validasi khusus KRS: minimal memilih satu kelas
+if (current === 'krs' && body.id_kelas.length === 0) {
+  const message = 'Pilih minimal satu kelas untuk KRS';
+
+  $('#notice').textContent = message;
+  $('#notice').classList.remove('hidden');
+  toast(message);
+  return;
+}
 
   // KRS: kirim juga kelas (mata kuliah) yang dicentang.
   if (current === 'krs') {
