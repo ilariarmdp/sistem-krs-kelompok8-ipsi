@@ -17,6 +17,7 @@ app.use(session({
 
 app.use('/api/auth', auth.router);
 app.use('/api', auth.requireApiLogin);
+app.use('/api/paket', require('./paket'));
 app.use('/api', access.guard);
 app.use(auth.requirePage);
 
