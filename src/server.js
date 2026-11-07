@@ -4,7 +4,6 @@ const session = require('express-session');
 const pool = require('./db');
 const auth = require('./auth');
 const access = require('./access');
-
 const app = express();
 app.use(express.json());
 
@@ -15,8 +14,28 @@ app.use(session({
   cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 8 }
 }));
 
+// Cek koneksi aplikasi ke server dan database.
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error('Health:', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Database tidak terhubung'
+    });
+  }
+});
+
 app.use('/api/auth', auth.router);
 app.use('/api', auth.requireApiLogin);
+app.use('/api/paket', require('./paket'));
+app.use('/api', access.guard);
+app.use(auth.requirePage);
+
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
 app.use('/api/paket', require('./paket'));
 app.use('/api', access.guard);
 app.use(auth.requirePage);
@@ -313,16 +332,6 @@ async function updateKrsStatus(idKrs, status) {
 
   return rows[0] || null;
 }
-// Cek koneksi aplikasi ke server dan database (indikator di sidebar).
-app.get('/api/health', async (req, res) => {
-  try {
-    await pool.query('SELECT 1');
-    return res.json({ ok: true });
-  } catch (error) {
-    console.error('Health:', error);
-    return res.status(500).json({ ok: false, error: 'Database tidak terhubung' });
-  }
-});
 
 // Metadata tabel untuk membangun menu dan form di frontend.
 app.get('/api/meta', (req, res) => res.json(tables));
@@ -615,6 +624,13 @@ app.delete('/api/:table/:id', async (req, res, next) => {
     return res.json({ ok: true, message: 'Data berhasil dihapus' });
   } catch (error) {
     console.error(`DELETE /api/${table}/${id}:`, error);
+
+    if (error.code === '23503') {
+      return res.status(409).json({
+        error: 'Data tidak dapat dihapus karena masih digunakan oleh data lain'
+      });
+    }
+
     return res.status(500).json({ error: 'Gagal menghapus data' });
   }
 });

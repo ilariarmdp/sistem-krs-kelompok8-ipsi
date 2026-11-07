@@ -1,12 +1,17 @@
 const pool = require('../src/db');
+if (process.env.DB_NAME !== 'modul_krs_testing') {
+  console.error('PENGUJIAN DIBATALKAN: Database bukan database testing!');
+  process.exit(1);
+}
+
 const fs = require('fs');
 const path = require('path');
 
 const BASE = 'http://localhost:3001';
 
 // ===== SESUAIKAN DENGAN AKUN KAMU =====
-const MHS = { username: '321', password: 'mahasiswa123', role: 'mahasiswa', nim: '2025001' };
-const DSN = { username: '456', password: 'dosen123', role: 'dosen', id: 1 };
+const MHS = { username: 'mahasiswa', password: 'mahasiswa123', role: 'mahasiswa', nim: '2025001' };
+const DSN = { username: 'dosen', password: 'dosen123', role: 'dosen', id: 1 };
 const ADM = { username: 'admin', password: 'admin123', role: 'admin' };
 // ======================================
 
