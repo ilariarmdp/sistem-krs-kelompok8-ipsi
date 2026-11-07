@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIKRS | Sistem Informasi Kartu Rencana Studi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0b1530;
+      --navy-2: #12224a;
+      --blue: #2f5be7;
+      --blue-2: #5b82ff;
+      --violet: #7a5cff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e3e7ef;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      color: var(--text);
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ===== HEADER ===== */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: linear-gradient(135deg, var(--navy), var(--navy-2));
+      border-bottom: 4px solid transparent;
+      border-image: linear-gradient(90deg, var(--blue), var(--violet), #38bdf8) 1;
+      box-shadow: 0 6px 24px rgba(11,21,48,.18);
+    }
+    .nav {
+      max-width: 1240px; margin: 0 auto; padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; color: #fff; }
+    .logo {
+      width: 48px; height: 48px; border-radius: 14px; flex: none;
+      display: grid; place-items: center;
+      font-size: 24px; font-weight: 800; color: #fff;
+      background: linear-gradient(135deg, var(--blue-2), var(--blue));
+      box-shadow: 0 8px 22px rgba(47,91,231,.55);
+    }
+    .brand-text { display: flex; align-items: center; gap: 18px; }
+    .brand-text h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+    .brand-text .divider { width: 1px; height: 34px; background: rgba(255,255,255,.22); }
+    .brand-text span { font-size: 12.5px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: #b6c2e2; line-height: 1.35; max-width: 230px; }
+    nav { display: flex; align-items: center; gap: 6px; }
+    nav a.link {
+      padding: 9px 14px; border-radius: 10px; font-size: 14px; font-weight: 500; color: #c6d1ee;
+      transition: background .2s, color .2s;
+    }
+    nav a.link:hover { background: rgba(255,255,255,.09); color: #fff; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      height: 50px; padding: 0 26px; border: 0; border-radius: 13px; cursor: pointer;
+      font: inherit; font-size: 15.5px; font-weight: 700;
+      transition: transform .15s, box-shadow .2s, filter .2s, background .2s;
+    }
+    .btn.primary {
+      color: #fff; background: linear-gradient(135deg, #4a73f5, var(--blue));
+      box-shadow: 0 10px 24px rgba(47,91,231,.36);
+    }
+    .btn.primary:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(47,91,231,.46); filter: brightness(1.05); }
+    .btn.ghost { color: var(--navy-2); background: #fff; border: 1.5px solid #cfd8ee; }
+    .btn.ghost:hover { transform: translateY(-2px); border-color: var(--blue); color: var(--blue); box-shadow: 0 10px 24px rgba(15,23,42,.08); }
+    .btn.sm { height: 42px; padding: 0 22px; font-size: 14px; border-radius: 11px; }
+    .btn:disabled { opacity: .75; cursor: not-allowed; transform: none; }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative; overflow: hidden;
+      background:
+        radial-gradient(800px 420px at 85% 10%, rgba(91,130,255,.16), transparent 60%),
+        radial-gradient(600px 400px at 0% 100%, rgba(122,92,255,.10), transparent 60%),
+        #f7f9ff;
+    }
+    .hero::before {
+      content: ""; position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(47,91,231,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(47,91,231,.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse at 70% 40%, #000 15%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at 70% 40%, #000 15%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-in {
+      position: relative; max-width: 1240px; margin: 0 auto; padding: 72px 32px 84px;
+      display: grid; grid-template-columns: 1.02fr 1fr; align-items: center; gap: 40px;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 8px 16px; border-radius: 999px;
+      background: #e9efff; color: var(--blue);
+      font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase;
+    }
+    .pill i { width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 4px rgba(16,185,129,.2); }
+    .hero h2 {
+      margin: 22px 0 18px;
+      font-size: clamp(34px, 4.1vw, 54px); line-height: 1.1; font-weight: 800; letter-spacing: -1.4px;
+      color: var(--navy);
+    }
+    .hero h2 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--blue), var(--violet));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hero p.lead { margin: 0 0 32px; max-width: 520px; font-size: 17px; line-height: 1.7; color: var(--muted); }
+    .actions { display: flex; flex-wrap: wrap; gap: 14px; }
+
+    .stats {
+      display: flex; flex-wrap: wrap; gap: 34px; margin-top: 46px; padding-top: 28px;
+      border-top: 1px solid #e1e7f5;
+    }
+    .stat b { display: block; font-size: 26px; font-weight: 800; letter-spacing: -.5px; color: var(--navy); }
+    .stat span { font-size: 13px; color: var(--muted); }
+
+    /* ILUSTRASI */
+    .art { position: relative; }
+    .art svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .float1 { animation: float 6s ease-in-out infinite; }
+    .float2 { animation: float 7s ease-in-out infinite reverse; }
+    .float3 { animation: float 8s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    /* ===== FITUR ===== */
+    section.features { max-width: 1240px; margin: 0 auto; padding: 84px 32px 36px; }
+    .sec-head { text-align: center; max-width: 680px; margin: 0 auto 48px; }
+    .sec-head small { font-size: 12.5px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--blue); }
+    .sec-head h3 { margin: 10px 0 12px; font-size: 34px; font-weight: 800; letter-spacing: -1px; color: var(--navy); }
+    .sec-head p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.7; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .fcard {
+      padding: 30px 28px; border-radius: 20px; background: #fff;
+      border: 1px solid #e8ecf5; box-shadow: 0 6px 22px rgba(15,23,42,.04);
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+    }
+    .fcard:hover { transform: translateY(-6px); box-shadow: 0 20px 44px rgba(47,91,231,.12); border-color: #cdd9ff; }
+    .fcard .ic {
+      width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 20px;
+      color: #fff; background: linear-gradient(135deg, var(--blue-2), var(--blue));
+      box-shadow: 0 10px 22px rgba(47,91,231,.3);
+    }
+    .fcard:nth-child(2) .ic { background: linear-gradient(135deg, #9b7bff, var(--violet)); box-shadow: 0 10px 22px rgba(122,92,255,.3); }
+    .fcard:nth-child(3) .ic { background: linear-gradient(135deg, #34d399, #10b981); box-shadow: 0 10px 22px rgba(16,185,129,.28); }
+    .fcard h4 { margin: 0 0 10px; font-size: 18px; font-weight: 700; color: var(--navy); }
+    .fcard p { margin: 0; font-size: 14.5px; line-height: 1.7; color: var(--muted); }
+
+    /* ===== FOOTER ===== */
+    footer { margin-top: 70px; background: linear-gradient(135deg, var(--navy), var(--navy-2)); color: #9fb0d8; }
+    .foot {
+      max-width: 1240px; margin: 0 auto; padding: 30px 32px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; font-size: 13.5px;
+    }
+    .foot b { color: #fff; }
+
+    /* ===== MODAL ===== */
+    .overlay {
+      position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px;
+      background: rgba(8,14,34,.62); backdrop-filter: blur(6px);
+    }
+    .overlay.open { display: flex; animation: fade .25s both; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      position: relative; width: 100%; max-width: 440px; max-height: 92vh; overflow: auto;
+      background: #fff; border-radius: 24px; padding: 40px 38px 32px;
+      box-shadow: 0 30px 80px rgba(8,14,34,.45);
+      animation: rise .35s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .modal.wide { max-width: 560px; }
+    @keyframes rise { from { opacity: 0; transform: translateY(20px) scale(.98); } to { opacity: 1; transform: none; } }
+    .close {
+      position: absolute; right: 16px; top: 16px; width: 38px; height: 38px; border: 0; border-radius: 11px;
+      background: #f1f4fa; color: #64748b; cursor: pointer; display: grid; place-items: center; transition: background .2s, color .2s;
+    }
+    .close:hover { background: #e3e9f7; color: var(--navy); }
+    .m-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .m-brand .logo { width: 44px; height: 44px; font-size: 22px; border-radius: 13px; box-shadow: 0 8px 20px rgba(47,91,231,.4); }
+    .m-brand b { font-size: 20px; font-weight: 800; color: var(--navy); }
+    .m-brand small { display: block; font-size: 12px; color: var(--muted); font-weight: 500; }
+    .modal h3 { margin: 0 0 6px; font-size: 26px; font-weight: 800; letter-spacing: -.6px; color: var(--navy); }
+    .modal .sub { margin: 0 0 26px; color: var(--muted); font-size: 14.5px; }
+
+    .field { margin-bottom: 18px; }
+    .field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #334155; }
+    .control { position: relative; }
+    .control .lead-ic { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; display: grid; pointer-events: none; transition: color .2s; }
+    .control input {
+      width: 100%; height: 50px; padding: 0 46px 0 44px; font: inherit; font-size: 15px; color: var(--text);
+      background: #f8fafc; border: 1.5px solid var(--line); border-radius: 13px; outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .control input::placeholder { color: #a3aec2; }
+    .control input:focus { background: #fff; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(47,91,231,.14); }
+    .control:focus-within .lead-ic { color: var(--blue); }
+    .toggle {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 9px;
+      background: transparent; color: #94a3b8; cursor: pointer; display: grid; place-items: center; transition: background .2s, color .2s;
+    }
+    .toggle:hover { background: #eef2ff; color: var(--blue); }
+
+    .roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 5px; margin-bottom: 22px; background: #f1f4fa; border-radius: 14px; }
+    .roles button {
+      height: 40px; border: 0; border-radius: 10px; background: transparent; cursor: pointer;
+      font: inherit; font-size: 13.5px; font-weight: 600; color: #64748b; transition: background .2s, color .2s, box-shadow .2s;
+    }
+    .roles button:hover { color: var(--navy); }
+    .roles button.active { background: #fff; color: var(--blue); box-shadow: 0 4px 12px rgba(15,23,42,.1); }
+    #err {
+      display: none; align-items: center; gap: 10px; margin-bottom: 16px; padding: 12px 14px; border-radius: 12px;
+      background: #fef2f2; border: 1px solid #fecaca; color: var(--danger); font-size: 13.5px; font-weight: 500;
+    }
+    #err.show { display: flex; animation: shake .4s; }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+    .submit { width: 100%; height: 52px; }
+    .spin { width: 18px; height: 18px; border-radius: 50%; display: none; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; animation: rot .7s linear infinite; }
+    .loading .spin { display: block; }
+    @keyframes rot { to { transform: rotate(360deg); } }
+    .secure { margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12.5px; color: #8a94a8; }
+    .secure svg { color: #10b981; }
+
+    .terms-list { margin: 0 0 8px; padding: 0; list-style: none; counter-reset: t; display: grid; gap: 12px; }
+    .terms-list li {
+      counter-increment: t; position: relative; padding: 14px 16px 14px 56px; border-radius: 14px;
+      background: #f7f9ff; border: 1px solid #e6ecfa; font-size: 14px; line-height: 1.65; color: #475569;
+    }
+    .terms-list li::before {
+      content: counter(t); position: absolute; left: 14px; top: 14px; width: 28px; height: 28px; border-radius: 9px;
+      display: grid; place-items: center; font-size: 13px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--blue-2), var(--blue));
+    }
+    .terms-list b { color: var(--navy); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1000px) {
+      .hero-in { grid-template-columns: 1fr; padding-top: 48px; }
+      .art { max-width: 560px; margin: 0 auto; }
+      .grid { grid-template-columns: 1fr; }
+      .brand-text span, .brand-text .divider { display: none; }
+    }
+    @media (max-width: 640px) {
+      .nav { padding: 12px 18px; }
+      nav a.link { display: none; }
+      .hero-in, section.features { padding-left: 18px; padding-right: 18px; }
+      .btn { width: 100%; }
+      .modal { padding: 34px 24px 26px; }
+      .stats { gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="nav">
+      <a href="#" class="brand">
+        <div class="logo">S</div>
+        <div class="brand-text">
+          <h1>SIKRS</h1>
+          <div class="divider"></div>
+          <span>Sistem Informasi<br>Kartu Rencana Studi</span>
+        </div>
+      </a>
+      <nav>
+        <a class="link" href="#beranda">Beranda</a>
+        <a class="link" href="#fitur">Fitur</a>
+        <a class="link" href="#" data-open="terms">Ketentuan</a>
+        <button class="btn primary sm" data-open="login">Login</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero" id="beranda">
+    <div class="hero-in">
+      <div>
+        <span class="pill"><i></i> Sistem Informasi Akademik</span>
+        <h2>Selamat datang di Sistem Informasi <em>Kartu Rencana Studi</em> (SIKRS)</h2>
+        <p class="lead">Platform terpadu untuk mengelola data akademik dan proses pengisian KRS dengan validasi aturan otomatis, cepat, akurat, dan terintegrasi dalam satu sistem.</p>
+        <div class="actions">
+          <button class="btn primary" data-open="login">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Login
+          </button>
+          <button class="btn ghost" data-open="terms">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+            Syarat dan Ketentuan
+          </button>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>9</b><span>Modul data akademik</span></div>
+          <div class="stat"><b>24 SKS</b><span>Validasi batas otomatis</span></div>
+          <div class="stat"><b>PostgreSQL</b><span>Database terintegrasi</span></div>
+        </div>
+      </div>
+
+      <!-- ILUSTRASI ORIGINAL -->
+      <div class="art">
+        <svg viewBox="0 0 560 460" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b82ff"/><stop offset="1" stop-color="#2f5be7"/></linearGradient>
+            <linearGradient id="gViolet" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9b7bff"/><stop offset="1" stop-color="#7a5cff"/></linearGradient>
+            <linearGradient id="gGreen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#10b981"/></linearGradient>
+            <linearGradient id="gNavy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12224a"/><stop offset="1" stop-color="#0b1530"/></linearGradient>
+            <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#1c2f6b" flood-opacity=".22"/></filter>
+            <filter id="sh2" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#1c2f6b" flood-opacity=".2"/></filter>
+          </defs>
+
+          <!-- latar -->
+          <circle cx="285" cy="235" r="190" fill="#e6edff"/>
+          <circle cx="285" cy="235" r="140" fill="#dbe5ff" opacity=".7"/>
+          <circle cx="62" cy="120" r="8" fill="#c5d3ff"/>
+          <circle cx="520" cy="410" r="11" fill="#d9ccff"/>
+          <circle cx="505" cy="80" r="6" fill="#c5d3ff"/>
+
+          <!-- jendela utama -->
+          <g filter="url(#sh)">
+            <rect x="70" y="80" width="400" height="285" rx="20" fill="#fff"/>
+            <path d="M70 100a20 20 0 0 1 20-20h360a20 20 0 0 1 20 20v26H70z" fill="#f1f5ff"/>
+            <circle cx="96" cy="103" r="5" fill="#ff7a8a"/><circle cx="114" cy="103" r="5" fill="#ffc861"/><circle cx="132" cy="103" r="5" fill="#4ddc9a"/>
+            <rect x="200" y="97" width="150" height="12" rx="6" fill="#e2e9fb"/>
+            <!-- sidebar -->
+            <path d="M70 126h96v219a20 20 0 0 1-20 20H90a20 20 0 0 1-20-20z" fill="url(#gNavy)"/>
+            <rect x="86" y="144" width="30" height="30" rx="9" fill="url(#gBlue)"/>
+            <text x="101" y="165" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="16" fill="#fff">S</text>
+            <rect x="124" y="152" width="30" height="6" rx="3" fill="#8fa4d8"/><rect x="124" y="162" width="20" height="5" rx="2.5" fill="#53679c"/>
+            <rect x="82" y="196" width="72" height="26" rx="8" fill="#243a78"/>
+            <rect x="92" y="206" width="30" height="6" rx="3" fill="#b9c8ff"/>
+            <rect x="92" y="236" width="44" height="6" rx="3" fill="#53679c"/>
+            <rect x="92" y="258" width="52" height="6" rx="3" fill="#53679c"/>
+            <rect x="92" y="280" width="38" height="6" rx="3" fill="#53679c"/>
+            <rect x="92" y="302" width="48" height="6" rx="3" fill="#53679c"/>
+
+            <!-- konten -->
+            <rect x="188" y="146" width="130" height="12" rx="6" fill="#0f1c3f"/>
+            <rect x="188" y="166" width="190" height="7" rx="3.5" fill="#d5dcee"/>
+            <!-- kartu stat -->
+            <rect x="188" y="188" width="82" height="56" rx="12" fill="#eef3ff"/>
+            <rect x="198" y="200" width="30" height="6" rx="3" fill="#9db0e6"/>
+            <rect x="198" y="214" width="46" height="14" rx="5" fill="url(#gBlue)"/>
+            <rect x="280" y="188" width="82" height="56" rx="12" fill="#f3efff"/>
+            <rect x="290" y="200" width="30" height="6" rx="3" fill="#b9a7f5"/>
+            <rect x="290" y="214" width="46" height="14" rx="5" fill="url(#gViolet)"/>
+            <rect x="372" y="188" width="82" height="56" rx="12" fill="#e9faf3"/>
+            <rect x="382" y="200" width="30" height="6" rx="3" fill="#8fdcbc"/>
+            <rect x="382" y="214" width="46" height="14" rx="5" fill="url(#gGreen)"/>
+            <!-- tabel -->
+            <rect x="188" y="258" width="266" height="92" rx="12" fill="#fff" stroke="#e5eaf6"/>
+            <rect x="188" y="258" width="266" height="22" rx="12" fill="#f4f7ff"/>
+            <rect x="200" y="266" width="40" height="6" rx="3" fill="#a9b6d9"/><rect x="290" y="266" width="50" height="6" rx="3" fill="#a9b6d9"/><rect x="392" y="266" width="30" height="6" rx="3" fill="#a9b6d9"/>
+            <rect x="200" y="292" width="62" height="7" rx="3.5" fill="#c9d2e8"/><rect x="290" y="292" width="64" height="7" rx="3.5" fill="#dfe5f3"/><rect x="392" y="289" width="44" height="13" rx="6.5" fill="#d3f5e5"/>
+            <rect x="200" y="314" width="54" height="7" rx="3.5" fill="#c9d2e8"/><rect x="290" y="314" width="78" height="7" rx="3.5" fill="#dfe5f3"/><rect x="392" y="311" width="44" height="13" rx="6.5" fill="#dfe6ff"/>
+            <rect x="200" y="334" width="70" height="7" rx="3.5" fill="#c9d2e8"/><rect x="290" y="334" width="56" height="7" rx="3.5" fill="#dfe5f3"/><rect x="392" y="331" width="44" height="13" rx="6.5" fill="#ece5ff"/>
+          </g>
+
+          <!-- kartu melayang: progres SKS -->
+          <g class="float1" filter="url(#sh2)">
+            <rect x="386" y="30" width="150" height="86" rx="18" fill="#fff"/>
+            <circle cx="428" cy="73" r="22" fill="none" stroke="#e6ecfb" stroke-width="7"/>
+            <circle cx="428" cy="73" r="22" fill="none" stroke="url(#gBlue)" stroke-width="7" stroke-linecap="round" stroke-dasharray="121 138" transform="rotate(-90 428 73)"/>
+            <text x="428" y="78" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="13" fill="#0f1c3f">21</text>
+            <text x="462" y="66" font-family="Inter,Arial" font-weight="700" font-size="13" fill="#0f1c3f">Total SKS</text>
+            <text x="462" y="84" font-family="Inter,Arial" font-weight="500" font-size="11.5" fill="#7b8aa8">dari 24 SKS</text>
+          </g>
+
+          <!-- kartu melayang: disetujui -->
+          <g class="float2" filter="url(#sh2)">
+            <rect x="22" y="300" width="176" height="70" rx="18" fill="#fff"/>
+            <circle cx="58" cy="335" r="19" fill="url(#gGreen)"/>
+            <path d="M49 335l7 7 13-14" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="88" y="330" font-family="Inter,Arial" font-weight="700" font-size="13.5" fill="#0f1c3f">KRS Disetujui</text>
+            <text x="88" y="348" font-family="Inter,Arial" font-weight="500" font-size="11.5" fill="#7b8aa8">Semester Ganjil</text>
+          </g>
+
+          <!-- database -->
+          <g class="float3" filter="url(#sh2)">
+            <path d="M420 330v54c0 12 25 22 56 22s56-10 56-22v-54z" fill="url(#gViolet)"/>
+            <ellipse cx="476" cy="330" rx="56" ry="20" fill="#b9a4ff"/>
+            <path d="M420 356c0 12 25 22 56 22s56-10 56-22" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="3"/>
+            <path d="M420 380c0 12 25 22 56 22s56-10 56-22" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="3"/>
+            <circle cx="446" cy="372" r="3.5" fill="#fff"/><circle cx="446" cy="396" r="3.5" fill="#fff"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- FITUR -->
+  <section class="features" id="fitur">
+    <div class="sec-head">
+      <small>Fitur Utama</small>
+      <h3>Dirancang untuk pengelolaan akademik yang efisien</h3>
+      <p>Seluruh proses mulai dari data master hingga pengajuan KRS tersedia dalam satu sistem yang rapi dan mudah digunakan.</p>
+    </div>
+    <div class="grid">
+      <div class="fcard">
+        <div class="ic">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+        </div>
+        <h4>Manajemen Data Akademik</h4>
+        <p>Kelola program studi, dosen, mahasiswa, mata kuliah, periode, dan kelas kuliah secara terstruktur sesuai relasi database.</p>
+      </div>
+      <div class="fcard">
+        <div class="ic">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+        </div>
+        <h4>Pengisian KRS Terstruktur</h4>
+        <p>Susun rencana studi per periode, tambahkan kelas kuliah, dan ajukan KRS melalui alur yang jelas dari draft hingga disetujui.</p>
+      </div>
+      <div class="fcard">
+        <div class="ic">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <h4>Validasi Aturan Otomatis</h4>
+        <p>Batas SKS, kesesuaian periode, dan duplikasi kelas diperiksa otomatis sebelum KRS diajukan untuk meminimalkan kesalahan.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot">
+      <div><b>SIKRS</b> &middot; Sistem Informasi Kartu Rencana Studi</div>
+      <div>&copy; 2026 Kelompok 8 IPSI</div>
+    </div>
+  </footer>
+
+  <!-- MODAL LOGIN -->
+  <div class="overlay" id="loginModal">
+    <form class="modal" id="loginForm" novalidate autocomplete="on">
+      <button type="button" class="close" data-close aria-label="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="m-brand">
+        <div class="logo">S</div>
+        <div><b>SIKRS</b><small>Academic Management</small></div>
+      </div>
+      <h3>Masuk ke akun Anda</h3>
+      <p class="sub">Gunakan akun yang telah terdaftar untuk melanjutkan.</p>
+
+      <div class="roles" id="roles" role="tablist">
+        <button type="button" class="active" data-role="mahasiswa">Mahasiswa</button>
+        <button type="button" data-role="dosen">Dosen</button>
+        <button type="button" data-role="admin">Admin</button>
+      </div>
+
+      <div class="field">
+        <label for="username" id="userLabel">NIM</label>
+        <div class="control">
+          <span class="lead-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <input id="username" name="username" placeholder="Masukkan username" autocomplete="username" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="control">
+          <span class="lead-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <input id="password" name="password" type="password" placeholder="Masukkan password" autocomplete="current-password" required>
+          <button type="button" class="toggle" id="togglePw" aria-label="Tampilkan password">
+            <svg id="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="err" role="alert">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="errText"></span>
+      </div>
+
+      <button type="submit" class="btn primary submit" id="btn">
+        <span class="spin"></span><span id="btnText">Masuk</span>
+      </button>
+      <div class="secure">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Koneksi aman &middot; Data dilindungi
+      </div>
+    </form>
+  </div>
+
+  <!-- MODAL SYARAT DAN KETENTUAN -->
+  <div class="overlay" id="termsModal">
+    <div class="modal wide">
+      <button type="button" class="close" data-close aria-label="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <h3>Syarat dan Ketentuan</h3>
+      <p class="sub">Harap dibaca sebelum menggunakan SIKRS.</p>
+      <ol class="terms-list">
+        <li><b>Akun pribadi.</b> Setiap pengguna bertanggung jawab menjaga kerahasiaan username dan password, serta tidak membagikannya kepada pihak lain.</li>
+        <li><b>Data akurat.</b> Data yang dimasukkan ke dalam sistem harus benar dan dapat dipertanggungjawabkan.</li>
+        <li><b>Aturan akademik.</b> Pengisian KRS mengikuti batas SKS dan periode akademik yang berlaku. Sistem akan menolak data yang melanggar aturan.</li>
+        <li><b>Status KRS.</b> Detail KRS hanya dapat diubah selama berstatus draft. KRS yang sudah diajukan tidak dapat diubah.</li>
+        <li><b>Penggunaan wajar.</b> Sistem hanya digunakan untuk keperluan akademik dan tidak boleh disalahgunakan atau diakses tanpa izin.</li>
+        <li><b>Keamanan sesi.</b> Selalu keluar (logout) setelah selesai, terutama saat memakai perangkat bersama.</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const modals = { login: $('loginModal'), terms: $('termsModal') };
+
+    function openModal(name) {
+      Object.values(modals).forEach(m => m.classList.remove('open'));
+      modals[name].classList.add('open');
+      if (name === 'login') setTimeout(() => $('username').focus(), 80);
+    }
+    function closeAll() { Object.values(modals).forEach(m => m.classList.remove('open')); }
+
+    document.querySelectorAll('[data-open]').forEach(el =>
+      el.addEventListener('click', (e) => { e.preventDefault(); openModal(el.dataset.open); }));
+    document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeAll));
+    Object.values(modals).forEach(m => m.addEventListener('mousedown', (e) => { if (e.target === m) closeAll(); }));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+    if (location.hash === '#login') openModal('login');
+
+    // lihat/sembunyikan password
+    $('togglePw').addEventListener('click', () => {
+      const pw = $('password');
+      const show = pw.type === 'password';
+      pw.type = show ? 'text' : 'password';
+      $('eye').innerHTML = show
+        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    });
+
+    function showError(msg) {
+      $('errText').textContent = msg;
+      $('err').classList.remove('show');
+      void $('err').offsetWidth;
+      $('err').classList.add('show');
+    }
+
+    // pilih peran login
+    let currentRole = 'mahasiswa';
+    const roleInfo = {
+      mahasiswa: { label: 'NIM', ph: 'Masukkan NIM' },
+      dosen:     { label: 'NIDN / Username', ph: 'Masukkan NIDN' },
+      admin:     { label: 'Username', ph: 'Masukkan username admin' }
+    };
+    $('username').placeholder = roleInfo.mahasiswa.ph;
+    document.querySelectorAll('#roles button').forEach(b => b.addEventListener('click', () => {
+      currentRole = b.dataset.role;
+      document.querySelectorAll('#roles button').forEach(x => x.classList.toggle('active', x === b));
+      $('userLabel').textContent = roleInfo[currentRole].label;
+      $('username').placeholder = roleInfo[currentRole].ph;
+      $('err').classList.remove('show');
+      $('username').focus();
+    }));
+
+    // proses login
+    $('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('err').classList.remove('show');
+
+      const username = $('username').value.trim();
+      const password = $('password').value;
+      if (currentRole !== 'admin' && !/^\d+$/.test(username)) {
+      return showError(currentRole === 'mahasiswa' ? 'NIM harus berupa angka' : 'NIDN harus berupa angka');
+}
+
+      const btn = $('btn');
+      btn.disabled = true; btn.classList.add('loading');
+      $('btnText').textContent = 'Memproses...';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, role: currentRole })
+        });
+        if (res.ok) {
+          $('btnText').textContent = 'Berhasil, mengalihkan...';
+          location.href = '/';
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        showError(data.error || 'Login gagal, coba lagi');
+      } catch (_) {
+        showError('Tidak dapat terhubung ke server');
+      }
+
+      btn.disabled = false; btn.classList.remove('loading');
+      $('btnText').textContent = 'Masuk';
+    });
+
+    window.addEventListener('pageshow', async (e) => {
+  if (!e.persisted) return;          // hanya saat dipulihkan dari tombol Back
+  try {
+    const r = await fetch('/api/me');
+    if (r.ok) { location.replace('/'); return; }  // sudah login: langsung ke dashboard
+  } catch (err) {}
+  location.reload();                 // belum login: muat ulang form dari awal
+});
+  </script>
+</body>
+</html>
