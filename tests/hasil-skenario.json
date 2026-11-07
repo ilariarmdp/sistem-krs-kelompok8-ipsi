@@ -1,0 +1,128 @@
+[
+  {
+    "No": 1,
+    "Skenario": "Login valid",
+    "Harapan": "HTTP 200, masuk sesuai peran",
+    "Hasil Aktual": "HTTP 200: role mahasiswa",
+    "Status": "LULUS"
+  },
+  {
+    "No": 2,
+    "Skenario": "Login password salah",
+    "Harapan": "HTTP 401",
+    "Hasil Aktual": "HTTP 401: Username atau password salah",
+    "Status": "LULUS"
+  },
+  {
+    "No": 3,
+    "Skenario": "Akses API tanpa login",
+    "Harapan": "HTTP 401",
+    "Hasil Aktual": "HTTP 401: Silakan login terlebih dahulu",
+    "Status": "LULUS"
+  },
+  {
+    "No": 4,
+    "Skenario": "Mahasiswa buka katalog",
+    "Harapan": "HTTP 200, daftar kelas periode terbaru",
+    "Hasil Aktual": "HTTP 200, 53 kelas",
+    "Status": "LULUS"
+  },
+  {
+    "No": 5,
+    "Skenario": "Simpan pilihan mata kuliah",
+    "Harapan": "HTTP 200, KRS Draft dibuat",
+    "Hasil Aktual": "HTTP 200: Pilihan disimpan (3 SKS)",
+    "Status": "LULUS"
+  },
+  {
+    "No": 6,
+    "Skenario": "Simpan tanpa pilih kelas",
+    "Harapan": "HTTP 400, minimal satu mata kuliah",
+    "Hasil Aktual": "HTTP 400: Pilih minimal satu mata kuliah",
+    "Status": "LULUS"
+  },
+  {
+    "No": 7,
+    "Skenario": "Total SKS melebihi batas",
+    "Harapan": "HTTP 400, melebihi batas SKS",
+    "Hasil Aktual": "HTTP 400: Total SKS 3 melebihi batas 0 SKS",
+    "Status": "LULUS"
+  },
+  {
+    "No": 8,
+    "Skenario": "Kelas kuota penuh",
+    "Harapan": "HTTP 400, kuota penuh",
+    "Hasil Aktual": "HTTP 400: Ada kelas yang kuotanya sudah penuh",
+    "Status": "LULUS"
+  },
+  {
+    "No": 9,
+    "Skenario": "Ajukan KRS berstatus Draft",
+    "Harapan": "HTTP 200, status Diajukan",
+    "Hasil Aktual": "HTTP 200: KRS berhasil diajukan",
+    "Status": "LULUS"
+  },
+  {
+    "No": 10,
+    "Skenario": "Ubah KRS setelah diajukan",
+    "Harapan": "HTTP 400, tidak bisa diubah",
+    "Hasil Aktual": "HTTP 400: KRS sudah diajukan atau disetujui, tidak bisa diubah",
+    "Status": "LULUS"
+  },
+  {
+    "No": 11,
+    "Skenario": "Dosen PA menyetujui KRS",
+    "Harapan": "HTTP 200, status Disetujui",
+    "Hasil Aktual": "HTTP 200: KRS berhasil disetujui",
+    "Status": "LULUS"
+  },
+  {
+    "No": 12,
+    "Skenario": "Dosen non-PA memproses KRS",
+    "Harapan": "HTTP 400, bukan mahasiswa bimbingan",
+    "Hasil Aktual": "HTTP 400: KRS tidak ditemukan atau bukan mahasiswa bimbingan Anda",
+    "Status": "LULUS"
+  },
+  {
+    "No": 13,
+    "Skenario": "Dosen input nilai (KRS disetujui)",
+    "Harapan": "HTTP 200, nilai tersimpan",
+    "Hasil Aktual": "HTTP 200: Nilai berhasil disimpan | nilai di DB: A",
+    "Status": "LULUS"
+  },
+  {
+    "No": 14,
+    "Skenario": "Input nilai saat KRS belum disetujui",
+    "Harapan": "HTTP 403 ditolak",
+    "Hasil Aktual": "HTTP 403: Anda bukan dosen pengampu kelas ini atau KRS belum disetujui",
+    "Status": "LULUS"
+  },
+  {
+    "No": 15,
+    "Skenario": "Mahasiswa akses CRUD admin",
+    "Harapan": "HTTP 403 ditolak",
+    "Hasil Aktual": "HTTP 403: Anda tidak memiliki akses ke data ini",
+    "Status": "LULUS"
+  },
+  {
+    "No": 16,
+    "Skenario": "Admin tambah KRS",
+    "Harapan": "HTTP 201, KRS dibuat",
+    "Hasil Aktual": "HTTP 201: ok",
+    "Status": "LULUS"
+  },
+  {
+    "No": 17,
+    "Skenario": "KRS ganda satu periode",
+    "Harapan": "HTTP 400, sudah punya KRS",
+    "Hasil Aktual": "HTTP 400: Mahasiswa ini sudah punya KRS di periode tersebut",
+    "Status": "LULUS"
+  },
+  {
+    "No": 18,
+    "Skenario": "Hapus prodi yang masih dipakai",
+    "Harapan": "HTTP 409 (konflik)",
+    "Hasil Aktual": "HTTP 500: Gagal menghapus data",
+    "Status": "GAGAL"
+  }
+]
