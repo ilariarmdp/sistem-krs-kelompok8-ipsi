@@ -1,0 +1,42 @@
+[
+  {
+    "Pengujian": "INSERT 1000 data, satu per satu (berurutan)",
+    "Waktu (ms)": 367,
+    "Gagal": 0
+  },
+  {
+    "Pengujian": "INSERT 1000 data, bulk (1 query)",
+    "Waktu (ms)": 32,
+    "Gagal": 0
+  },
+  {
+    "Pengujian": "INSERT 1000 data, paralel via pool (default max 10)",
+    "Waktu (ms)": 215,
+    "Gagal": 0
+  },
+  {
+    "Pengujian": "READ: SELECT * mahasiswa x100",
+    "Waktu (ms)": 160,
+    "Gagal": 0
+  },
+  {
+    "Pengujian": "READ SEBELUM refactor: 7 tabel penuh x20 (meniru withLabels)",
+    "Waktu (ms)": 72,
+    "Gagal": 0
+  },
+  {
+    "Pengujian": "READ SESUDAH refactor: 3 tabel saja x20 (mahasiswa+prodi+dosen)",
+    "Waktu (ms)": 36,
+    "Gagal": 0
+  },
+  {
+    "Pengujian": "UPDATE 1000 data, satu per satu",
+    "Waktu (ms)": 393,
+    "Gagal": 0
+  },
+  {
+    "Pengujian": "DELETE 1000 data (bulk)",
+    "Waktu (ms)": 16,
+    "Gagal": 0
+  }
+]
