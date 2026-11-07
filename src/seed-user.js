@@ -33,7 +33,7 @@ if (role !== 'admin' && !ref) {
     await pool.query(
       `INSERT INTO users (username, password_hash, role, ref_id)
        VALUES ($1, $2, $3, $4)
-       ON CONFLICT (username) DO UPDATE
+       ON CONFLICT (username, role) DO UPDATE
          SET password_hash = EXCLUDED.password_hash,
              role = EXCLUDED.role,
              ref_id = EXCLUDED.ref_id`,

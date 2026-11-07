@@ -545,7 +545,7 @@
     let currentRole = 'mahasiswa';
     const roleInfo = {
       mahasiswa: { label: 'NIM', ph: 'Masukkan NIM' },
-      dosen:     { label: 'NIDN / Username', ph: 'Masukkan NIDN atau username' },
+      dosen:     { label: 'NIDN / Username', ph: 'Masukkan NIDN' },
       admin:     { label: 'Username', ph: 'Masukkan username admin' }
     };
     $('username').placeholder = roleInfo.mahasiswa.ph;
@@ -565,7 +565,9 @@
 
       const username = $('username').value.trim();
       const password = $('password').value;
-      if (!username || !password) return showError('Username dan password wajib diisi');
+      if (currentRole !== 'admin' && !/^\d+$/.test(username)) {
+      return showError(currentRole === 'mahasiswa' ? 'NIM harus berupa angka' : 'NIDN harus berupa angka');
+}
 
       const btn = $('btn');
       btn.disabled = true; btn.classList.add('loading');

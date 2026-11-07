@@ -23,8 +23,8 @@ router.post('/login', async (req, res) => {
         ON u.role = 'mahasiswa' AND m.nim = u.ref_id
       LEFT JOIN dosen d
         ON u.role = 'dosen' AND d.id_dosen::text = u.ref_id
-      WHERE u.username = $1
-    `, [String(username || '').trim()]);
+       WHERE u.username = $1 AND u.role = $2
+    `, [String(username || '').trim(), role]);
 
     const u = r.rows[0];
 
