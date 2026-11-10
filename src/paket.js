@@ -6,6 +6,7 @@
 const express = require('express');
 const pool = require('./db');
 const { maxSks, aturanKode } = require('./service/aturanAkademik');
+const { latestPeriode } = require('./service/periode');
 
 const router = express.Router();
 
@@ -37,14 +38,6 @@ const fail = (res, e) => {
 
   return res.status(500).json({ error: 'Terjadi kesalahan server' });
 };
-
-// Periode terbaru (berdasarkan tanggal mulai).
-async function latestPeriode(client = pool) {
-  const r = await client.query(
-    'SELECT id_periode, nama_periode FROM periode ORDER BY tgl_mulai DESC LIMIT 1'
-  );
-  return r.rows[0] || null;
-}
 
 // ---------------------------------------------------------------------
 //  GET /api/paket/katalog  (mahasiswa)
