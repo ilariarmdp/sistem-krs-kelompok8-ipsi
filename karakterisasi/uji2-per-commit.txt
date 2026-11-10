@@ -1,0 +1,14 @@
+9a730df  Ringkasan: 18 LULUS dari 18 skenario  | fix: improve error handling and test scenarios
+724f7bf  Ringkasan: 18 LULUS dari 18 skenario  | refactor: ganti nama fungsi all menjadi ambilSemuaBaris
+b054a64  Ringkasan: 18 LULUS dari 18 skenario  | refactor: ganti nama refOf menjadi ambilRefPengguna
+929e833  Ringkasan: 18 LULUS dari 18 skenario  | refactor: ganti nama dbStatus menjadi statusUntukDatabase
+7779aee  Ringkasan: 18 LULUS dari 18 skenario  | test: tambah tes karakterisasi withLabels untuk 9 tabel
+22f14a2  Ringkasan: 18 LULUS dari 18 skenario  | refactor: gabungkan 9 blok Object.fromEntries di withLabels menjadi buatPetaLabel
+e1a2a12  Ringkasan: 18 LULUS dari 18 skenario  | refactor: hapus fungsi getPk dan updateKrsStatus yang tidak dipakai
+4318f9c  Ringkasan: 18 LULUS dari 18 skenario  | refactor: ganti daftar nilai huruf yang duplikat dengan konstanta DAFTAR_NILAI_HURUF
+d79d59a  Ringkasan: 18 LULUS dari 18 skenario  | chore: pasang ESLint 9 dan simpan laporan analisis statis sebelum dan sesudah refactoring
+2e7fafa  Ringkasan: 18 LULUS dari 18 skenario  | refactor: beri konteks pada log error di login dan ubah password
+093c704  Ringkasan: 18 LULUS dari 18 skenario  | refactor: ganti Error biasa dengan kelas ErrorAturan untuk error aturan bisnis di paket.js
+1f76117  Ringkasan: 18 LULUS dari 18 skenario  | fix: jangan kirim detail error PostgreSQL ke klien, catat error database di log dengan konteks
+d3f87a8  Ringkasan: 18 LULUS dari 18 skenario  | refactor: pindahkan aturan batas SKS ke src/service/aturanAkademik.js dan ganti angka ajaib dengan konstanta
+5ec3ae4  Ringkasan: 18 LULUS dari 18 skenario  | refactor: hapus pendaftaran middleware dobel di server.js
