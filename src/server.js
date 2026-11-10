@@ -160,7 +160,7 @@ const validTable = (name) =>
 const cleanStatus = (value) =>
   typeof value === 'string' ? value.toLowerCase() : value;
 
-const dbStatus = (value) =>
+const statusUntukDatabase = (value) =>
   typeof value === 'string'
     ? ({
         aktif: 'Aktif',
@@ -327,7 +327,7 @@ async function updateKrsStatus(idKrs, status) {
      SET status = $1
      WHERE id_krs = $2
      RETURNING *`,
-    [dbStatus(status), idKrs]
+    [statusUntukDatabase(status), idKrs]
   );
 
   return rows[0] || null;
@@ -712,7 +712,7 @@ app.put('/api/krs/:idKrs/persetujuan', async (req, res) => {
         AND m.id_dosen_pa = $3
         AND LOWER(k.status) = 'diajukan'
       RETURNING k.*
-    `, [dbStatus(status), idKrs, idDosen]);
+    `, [statusUntukDatabase(status), idKrs, idDosen]);
 
     if (!rows.length) {
       return res.status(404).json({
