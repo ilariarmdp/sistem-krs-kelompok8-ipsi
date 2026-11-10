@@ -172,7 +172,7 @@ const dbStatus = (value) =>
     : value;
 
 // Mengambil seluruh data dari PostgreSQL.
-async function all(table) {
+async function ambilSemuaBaris(table) {
   if (!validTable(table)) {
     throw new Error('Tabel tidak dikenal');
   }
@@ -196,13 +196,13 @@ async function withLabels(table, rows) {
     kelas,
     krs
   ] = await Promise.all([
-    all('prodi'),
-    all('dosen'),
-    all('mahasiswa'),
-    all('mata_kuliah'),
-    all('periode'),
-    all('kelas'),
-    all('krs')
+    ambilSemuaBaris('prodi'),
+    ambilSemuaBaris('dosen'),
+    ambilSemuaBaris('mahasiswa'),
+    ambilSemuaBaris('mata_kuliah'),
+    ambilSemuaBaris('periode'),
+    ambilSemuaBaris('kelas'),
+    ambilSemuaBaris('krs')
   ]);
 
     const prodiMap = Object.fromEntries(
@@ -412,7 +412,7 @@ app.get('/api/options/:table', async (req, res) => {
   }
 
   try {
-    return res.json(await all(table));
+    return res.json(await ambilSemuaBaris(table));
   } catch (error) {
     console.error(`GET /api/options/${table}:`, error);
     return res.status(500).json({ error: 'Gagal mengambil pilihan' });
@@ -454,7 +454,7 @@ app.get('/api/:table', async (req, res, next) => {
   }
 
   try {
-    const rows = await all(table);
+    const rows = await ambilSemuaBaris(table);
     const labeledRows = await withLabels(table, rows);
 
     return res.json(labeledRows);
