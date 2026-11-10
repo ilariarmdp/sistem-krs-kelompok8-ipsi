@@ -4,7 +4,6 @@ const session = require('express-session');
 const pool = require('./db');
 const auth = require('./auth');
 const access = require('./access');
-
 const app = express();
 app.use(express.json());
 
@@ -15,6 +14,20 @@ app.use(session({
   cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 8 }
 }));
 
+// Cek koneksi aplikasi ke server dan database.
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error('Health:', error);
+    return res.status(500).json({
+      ok: false,
+      error: 'Database tidak terhubung'
+    });
+  }
+});
+
 app.use('/api/auth', auth.router);
 app.use('/api', auth.requireApiLogin);
 app.use('/api/paket', require('./paket'));
@@ -24,7 +37,10 @@ app.use(auth.requirePage);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Mengambil ref (NIM / id_dosen) dari sesi.
-const refOf = (user) => user.ref ?? user.ref_id;
+const ambilRefPengguna = (user) => user.ref ?? user.ref_id;
+
+// Daftar nilai huruf yang diizinkan (kosong = belum dinilai).
+const DAFTAR_NILAI_HURUF = ['', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'E'];
 
 // Metadata tabel.
 const tables = {
@@ -120,7 +136,7 @@ const tables = {
     fields: [
       ['id_krs', 'KRS', 'fk', true, 'krs', 'id_krs', 'id_krs'],
       ['id_kelas', 'Kelas', 'fk', true, 'kelas', 'id_kelas', 'id_kelas'],
-      ['nilai_huruf', 'Nilai Huruf', 'select', false, ['', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'E']]
+      ['nilai_huruf', 'Nilai Huruf', 'select', false, DAFTAR_NILAI_HURUF]
     ]
   },
 
@@ -141,7 +157,7 @@ const validTable = (name) =>
 const cleanStatus = (value) =>
   typeof value === 'string' ? value.toLowerCase() : value;
 
-const dbStatus = (value) =>
+const statusUntukDatabase = (value) =>
   typeof value === 'string'
     ? ({
         aktif: 'Aktif',
@@ -153,7 +169,7 @@ const dbStatus = (value) =>
     : value;
 
 // Mengambil seluruh data dari PostgreSQL.
-async function all(table) {
+async function ambilSemuaBaris(table) {
   if (!validTable(table)) {
     throw new Error('Tabel tidak dikenal');
   }
@@ -164,6 +180,13 @@ async function all(table) {
     ...row,
     ...(row.status ? { status: cleanStatus(row.status) } : {})
   }));
+}
+
+// Membuat peta {kunci: nilai} dari daftar baris.
+function buatPetaLabel(rows, kolomKunci, kolomNilai) {
+  return Object.fromEntries(
+    rows.map(row => [row[kolomKunci], row[kolomNilai]])
+  );
 }
 
 // Menambahkan label relasi agar tampilan frontend mudah dibaca.
@@ -177,50 +200,32 @@ async function withLabels(table, rows) {
     kelas,
     krs
   ] = await Promise.all([
-    all('prodi'),
-    all('dosen'),
-    all('mahasiswa'),
-    all('mata_kuliah'),
-    all('periode'),
-    all('kelas'),
-    all('krs')
+    ambilSemuaBaris('prodi'),
+    ambilSemuaBaris('dosen'),
+    ambilSemuaBaris('mahasiswa'),
+    ambilSemuaBaris('mata_kuliah'),
+    ambilSemuaBaris('periode'),
+    ambilSemuaBaris('kelas'),
+    ambilSemuaBaris('krs')
   ]);
 
-    const prodiMap = Object.fromEntries(
-    prodi.map(row => [row.kode_prodi, row.nama_prodi])
-  );
+    const prodiMap = buatPetaLabel(prodi, 'kode_prodi', 'nama_prodi');
 
-  const dosenMap = Object.fromEntries(
-    dosen.map(row => [row.id_dosen, row.nama])
-  );
+  const dosenMap = buatPetaLabel(dosen, 'id_dosen', 'nama');
 
-  const mahasiswaMap = Object.fromEntries(
-    mahasiswa.map(row => [row.nim, row.nama])
-  );
+  const mahasiswaMap = buatPetaLabel(mahasiswa, 'nim', 'nama');
 
-  const mkMap = Object.fromEntries(
-    mk.map(row => [row.kode_mk, row.nama_mk])
-  );
+  const mkMap = buatPetaLabel(mk, 'kode_mk', 'nama_mk');
 
-  const periodeMap = Object.fromEntries(
-    periode.map(row => [row.id_periode, row.nama_periode])
-  );
+  const periodeMap = buatPetaLabel(periode, 'id_periode', 'nama_periode');
 
-  const kelasMap = Object.fromEntries(
-    kelas.map(row => [row.id_kelas, row.nama_kelas])
-  );
+  const kelasMap = buatPetaLabel(kelas, 'id_kelas', 'nama_kelas');
 
-  const krsMap = Object.fromEntries(
-    krs.map(row => [row.id_krs, row.nim])
-  );
+  const krsMap = buatPetaLabel(krs, 'id_krs', 'nim');
 
-  const kelasMkMap = Object.fromEntries(
-    kelas.map(row => [row.id_kelas, row.kode_mk])
-  );
+  const kelasMkMap = buatPetaLabel(kelas, 'id_kelas', 'kode_mk');
 
-  const sksMap = Object.fromEntries(
-    mk.map(row => [row.kode_mk, row.sks])
-  );
+  const sksMap = buatPetaLabel(mk, 'kode_mk', 'sks');
 
   return rows.map(row => {
     const result = { ...row };
@@ -256,11 +261,6 @@ async function withLabels(table, rows) {
 
     return result;
   });
-}
-
-// Mengambil nilai primary key dari data.
-function getPk(table, row) {
-  return tables[table].pk.map(key => row[key]);
 }
 
 // Memeriksa apakah nilai wajib sudah diisi.
@@ -301,29 +301,6 @@ async function findByPk(table, values) {
   return rows[0] || null;
 }
 
-// Mengubah status KRS.
-async function updateKrsStatus(idKrs, status) {
-  const { rows } = await pool.query(
-    `UPDATE krs
-     SET status = $1
-     WHERE id_krs = $2
-     RETURNING *`,
-    [dbStatus(status), idKrs]
-  );
-
-  return rows[0] || null;
-}
-// Cek koneksi aplikasi ke server dan database (indikator di sidebar).
-app.get('/api/health', async (req, res) => {
-  try {
-    await pool.query('SELECT 1');
-    return res.json({ ok: true });
-  } catch (error) {
-    console.error('Health:', error);
-    return res.status(500).json({ ok: false, error: 'Database tidak terhubung' });
-  }
-});
-
 // Metadata tabel untuk membangun menu dan form di frontend.
 app.get('/api/meta', (req, res) => res.json(tables));
 
@@ -335,7 +312,7 @@ app.get('/api/stats', async (req, res) => {
   try {
     const user = req.session.user;
     const role = user.role;
-    const ref = refOf(user);
+    const ref = ambilRefPengguna(user);
 
     if (role === 'mahasiswa') {
       const { rows } = await pool.query(`
@@ -403,7 +380,7 @@ app.get('/api/options/:table', async (req, res) => {
   }
 
   try {
-    return res.json(await all(table));
+    return res.json(await ambilSemuaBaris(table));
   } catch (error) {
     console.error(`GET /api/options/${table}:`, error);
     return res.status(500).json({ error: 'Gagal mengambil pilihan' });
@@ -445,7 +422,7 @@ app.get('/api/:table', async (req, res, next) => {
   }
 
   try {
-    const rows = await all(table);
+    const rows = await ambilSemuaBaris(table);
     const labeledRows = await withLabels(table, rows);
 
     return res.json(labeledRows);
@@ -615,6 +592,13 @@ app.delete('/api/:table/:id', async (req, res, next) => {
     return res.json({ ok: true, message: 'Data berhasil dihapus' });
   } catch (error) {
     console.error(`DELETE /api/${table}/${id}:`, error);
+
+    if (error.code === '23503') {
+      return res.status(409).json({
+        error: 'Data tidak dapat dihapus karena masih digunakan oleh data lain'
+      });
+    }
+
     return res.status(500).json({ error: 'Gagal menghapus data' });
   }
 });
@@ -630,7 +614,7 @@ app.post('/api/krs/:idKrs/ajukan', async (req, res) => {
   }
 
   const idKrs = Number(req.params.idKrs);
-  const nim = refOf(user);
+  const nim = ambilRefPengguna(user);
 
   if (!Number.isInteger(idKrs) || idKrs <= 0) {
     return res.status(400).json({ error: 'ID KRS tidak valid' });
@@ -674,7 +658,7 @@ app.put('/api/krs/:idKrs/persetujuan', async (req, res) => {
   }
 
   const idKrs = Number(req.params.idKrs);
-  const idDosen = Number(refOf(user));
+  const idDosen = Number(ambilRefPengguna(user));
   const status = String(req.body?.status ?? '').toLowerCase();
 
   if (
@@ -696,7 +680,7 @@ app.put('/api/krs/:idKrs/persetujuan', async (req, res) => {
         AND m.id_dosen_pa = $3
         AND LOWER(k.status) = 'diajukan'
       RETURNING k.*
-    `, [dbStatus(status), idKrs, idDosen]);
+    `, [statusUntukDatabase(status), idKrs, idDosen]);
 
     if (!rows.length) {
       return res.status(404).json({
@@ -725,11 +709,11 @@ app.put('/api/krs-detail/:idKrs/:idKelas/nilai', async (req, res) => {
     });
   }
 
-  const idDosen = Number(refOf(user));
+  const idDosen = Number(ambilRefPengguna(user));
   const idKrs = Number(req.params.idKrs);
   const idKelas = Number(req.params.idKelas);
   const nilai = String(req.body?.nilai_huruf ?? '').trim().toUpperCase();
-  const nilaiValid = ['', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'E'];
+  const nilaiValid = DAFTAR_NILAI_HURUF;
 
   if (
     !Number.isInteger(idKrs) ||

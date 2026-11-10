@@ -1,0 +1,1354 @@
+{
+  "prodi": [
+    {
+      "kode_prodi": "SI",
+      "nama_prodi": "Sistem Informasi",
+      "jenjang": "S1"
+    },
+    {
+      "kode_prodi": "TI",
+      "nama_prodi": "Teknik Informatika",
+      "jenjang": "S1"
+    },
+    {
+      "kode_prodi": "MI",
+      "nama_prodi": "Kimia",
+      "jenjang": "S1"
+    }
+  ],
+  "dosen": [
+    {
+      "id_dosen": 1,
+      "nidn": "0412345678",
+      "nama": "Budi Santoso",
+      "email": "budi@kampus.ac.id",
+      "kode_prodi": "SI",
+      "label_prodi": "Sistem Informasi"
+    },
+    {
+      "id_dosen": 2,
+      "nidn": "0412345679",
+      "nama": "Siti Rahmawati",
+      "email": "siti@kampus.ac.id",
+      "kode_prodi": "SI",
+      "label_prodi": "Sistem Informasi"
+    },
+    {
+      "id_dosen": 3,
+      "nidn": "0412345680",
+      "nama": "Sulista Endah",
+      "email": "sulis.endah@kampus.ac.id",
+      "kode_prodi": "TI",
+      "label_prodi": "Teknik Informatika"
+    }
+  ],
+  "mahasiswa": [
+    {
+      "nim": "21223456",
+      "nama": "sean",
+      "email": "sean@gmail.com",
+      "tahun_masuk": 2024,
+      "status": "aktif",
+      "kode_prodi": "SI",
+      "id_dosen_pa": 2,
+      "label_prodi": "Sistem Informasi",
+      "label_dosen_pa": "Siti Rahmawati"
+    },
+    {
+      "nim": "21223457",
+      "nama": "keonu",
+      "email": "keonu123@gmail.com",
+      "tahun_masuk": 2025,
+      "status": "aktif",
+      "kode_prodi": "TI",
+      "id_dosen_pa": 1,
+      "label_prodi": "Teknik Informatika",
+      "label_dosen_pa": "Budi Santoso"
+    },
+    {
+      "nim": "21223459",
+      "nama": "james",
+      "email": "james544@gmail.com",
+      "tahun_masuk": 2022,
+      "status": "aktif",
+      "kode_prodi": "TI",
+      "id_dosen_pa": 1,
+      "label_prodi": "Teknik Informatika",
+      "label_dosen_pa": "Budi Santoso"
+    },
+    {
+      "nim": "2025001",
+      "nama": "Andi Pratama",
+      "email": "andi@kampus.ac.id",
+      "tahun_masuk": 2025,
+      "status": "cuti",
+      "kode_prodi": "SI",
+      "id_dosen_pa": 1,
+      "label_prodi": "Sistem Informasi",
+      "label_dosen_pa": "Budi Santoso"
+    }
+  ],
+  "mata_kuliah": [
+    {
+      "kode_mk": "SI101",
+      "nama_mk": "Algoritma dan Pemrograman",
+      "sks": 3,
+      "semester_ke": 1,
+      "kode_prodi": "SI",
+      "label_prodi": "Sistem Informasi"
+    },
+    {
+      "kode_mk": "SI102",
+      "nama_mk": "Basis Data",
+      "sks": 3,
+      "semester_ke": 2,
+      "kode_prodi": "SI",
+      "label_prodi": "Sistem Informasi"
+    },
+    {
+      "kode_mk": "SI103",
+      "nama_mk": "Analisis Proses Bisnis",
+      "sks": 3,
+      "semester_ke": 3,
+      "kode_prodi": "SI",
+      "label_prodi": "Sistem Informasi"
+    },
+    {
+      "kode_mk": "MK202",
+      "nama_mk": "Pemrograman Berorientasi Objek",
+      "sks": 3,
+      "semester_ke": 2,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK302",
+      "nama_mk": "Rekayasa Perangkat Lunak",
+      "sks": 3,
+      "semester_ke": 3,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK206",
+      "nama_mk": "Sistem Digital",
+      "sks": 3,
+      "semester_ke": 2,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK604",
+      "nama_mk": "Pengolahan Citra Digital",
+      "sks": 3,
+      "semester_ke": 6,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK505",
+      "nama_mk": "Komputasi Awan",
+      "sks": 3,
+      "semester_ke": 5,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK501",
+      "nama_mk": "Pemrograman Web Lanjut",
+      "sks": 3,
+      "semester_ke": 5,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK102",
+      "nama_mk": "Pendidikan Pancasila",
+      "sks": 2,
+      "semester_ke": 1,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK403",
+      "nama_mk": "Kecerdasan Buatan",
+      "sks": 3,
+      "semester_ke": 4,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK705",
+      "nama_mk": "Data Warehouse",
+      "sks": 3,
+      "semester_ke": 7,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK203",
+      "nama_mk": "Matematika Diskrit",
+      "sks": 3,
+      "semester_ke": 2,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK204",
+      "nama_mk": "Aljabar Linear",
+      "sks": 3,
+      "semester_ke": 2,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK306",
+      "nama_mk": "Statistika dan Probabilitas",
+      "sks": 3,
+      "semester_ke": 3,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK703",
+      "nama_mk": "Mata Kuliah Pilihan I",
+      "sks": 3,
+      "semester_ke": 7,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK704",
+      "nama_mk": "Mata Kuliah Pilihan II",
+      "sks": 3,
+      "semester_ke": 7,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK503",
+      "nama_mk": "Manajemen Proyek TI",
+      "sks": 3,
+      "semester_ke": 5,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK106",
+      "nama_mk": "Pengantar Teknologi Informasi",
+      "sks": 3,
+      "semester_ke": 1,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK603",
+      "nama_mk": "Internet of Things",
+      "sks": 3,
+      "semester_ke": 6,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK103",
+      "nama_mk": "Bahasa Indonesia",
+      "sks": 2,
+      "semester_ke": 1,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK506",
+      "nama_mk": "Pengujian Perangkat Lunak",
+      "sks": 3,
+      "semester_ke": 5,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK108",
+      "nama_mk": "Logika Informatika",
+      "sks": 3,
+      "semester_ke": 1,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK702",
+      "nama_mk": "Kuliah Kerja Nyata",
+      "sks": 3,
+      "semester_ke": 7,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK101",
+      "nama_mk": "Pendidikan Agama",
+      "sks": 2,
+      "semester_ke": 1,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK706",
+      "nama_mk": "Audit Sistem Informasi",
+      "sks": 3,
+      "semester_ke": 7,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK803",
+      "nama_mk": "Mata Kuliah Pilihan III",
+      "sks": 3,
+      "semester_ke": 8,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK507",
+      "nama_mk": "Etika Profesi",
+      "sks": 2,
+      "semester_ke": 5,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK605",
+      "nama_mk": "Tata Kelola TI",
+      "sks": 3,
+      "semester_ke": 6,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK504",
+      "nama_mk": "Pembelajaran Mesin",
+      "sks": 3,
+      "semester_ke": 5,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK402",
+      "nama_mk": "Analisis dan Perancangan Sistem",
+      "sks": 3,
+      "semester_ke": 4,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK407",
+      "nama_mk": "Metodologi Penelitian",
+      "sks": 2,
+      "semester_ke": 4,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK207",
+      "nama_mk": "Pendidikan Kewarganegaraan",
+      "sks": 2,
+      "semester_ke": 2,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK606",
+      "nama_mk": "Kewirausahaan",
+      "sks": 2,
+      "semester_ke": 6,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK405",
+      "nama_mk": "Pemrograman Mobile",
+      "sks": 3,
+      "semester_ke": 4,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK601",
+      "nama_mk": "Sistem Informasi Enterprise",
+      "sks": 3,
+      "semester_ke": 6,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK502",
+      "nama_mk": "Data Mining",
+      "sks": 3,
+      "semester_ke": 5,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK404",
+      "nama_mk": "Arsitektur dan Organisasi Komputer",
+      "sks": 3,
+      "semester_ke": 4,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK602",
+      "nama_mk": "Big Data",
+      "sks": 3,
+      "semester_ke": 6,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK607",
+      "nama_mk": "Kerja Praktik",
+      "sks": 3,
+      "semester_ke": 6,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK305",
+      "nama_mk": "Basis Data Lanjut",
+      "sks": 3,
+      "semester_ke": 3,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK301",
+      "nama_mk": "Analisis Algoritma",
+      "sks": 3,
+      "semester_ke": 3,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK104",
+      "nama_mk": "Bahasa Inggris",
+      "sks": 2,
+      "semester_ke": 1,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK201",
+      "nama_mk": "Struktur Data",
+      "sks": 3,
+      "semester_ke": 2,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK801",
+      "nama_mk": "Skripsi",
+      "sks": 6,
+      "semester_ke": 8,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK304",
+      "nama_mk": "Sistem Operasi",
+      "sks": 3,
+      "semester_ke": 3,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK401",
+      "nama_mk": "Pemrograman Web",
+      "sks": 3,
+      "semester_ke": 4,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK406",
+      "nama_mk": "Keamanan Informasi",
+      "sks": 3,
+      "semester_ke": 4,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK307",
+      "nama_mk": "Interaksi Manusia dan Komputer",
+      "sks": 3,
+      "semester_ke": 3,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK701",
+      "nama_mk": "Seminar Proposal Skripsi",
+      "sks": 2,
+      "semester_ke": 7,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK802",
+      "nama_mk": "Seminar Hasil Skripsi",
+      "sks": 2,
+      "semester_ke": 8,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK105",
+      "nama_mk": "Kalkulus",
+      "sks": 3,
+      "semester_ke": 1,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    },
+    {
+      "kode_mk": "MK303",
+      "nama_mk": "Jaringan Komputer",
+      "sks": 3,
+      "semester_ke": 3,
+      "kode_prodi": "MI",
+      "label_prodi": "Kimia"
+    }
+  ],
+  "periode": [
+    {
+      "id_periode": "G2627",
+      "nama_periode": "Ganjil 2026/2027",
+      "tgl_mulai": "2026-07-31T17:00:00.000Z",
+      "tgl_selesai": "2026-12-30T17:00:00.000Z"
+    }
+  ],
+  "kelas": [
+    {
+      "id_kelas": 3,
+      "kode_mk": "SI103",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 35,
+      "ruangan": "R103",
+      "label_mk": "Analisis Proses Bisnis",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 4,
+      "kode_mk": "MK101",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-101",
+      "label_mk": "Pendidikan Agama",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 5,
+      "kode_mk": "MK102",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-101",
+      "label_mk": "Pendidikan Pancasila",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 6,
+      "kode_mk": "MK103",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-101",
+      "label_mk": "Bahasa Indonesia",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 7,
+      "kode_mk": "MK104",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-101",
+      "label_mk": "Bahasa Inggris",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 8,
+      "kode_mk": "MK105",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-101",
+      "label_mk": "Kalkulus",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 9,
+      "kode_mk": "MK106",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-101",
+      "label_mk": "Pengantar Teknologi Informasi",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 10,
+      "kode_mk": "MK108",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-101",
+      "label_mk": "Logika Informatika",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 11,
+      "kode_mk": "MK201",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-102",
+      "label_mk": "Struktur Data",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 12,
+      "kode_mk": "MK202",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-102",
+      "label_mk": "Pemrograman Berorientasi Objek",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 13,
+      "kode_mk": "MK203",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-102",
+      "label_mk": "Matematika Diskrit",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 14,
+      "kode_mk": "MK204",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-102",
+      "label_mk": "Aljabar Linear",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 15,
+      "kode_mk": "MK206",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-102",
+      "label_mk": "Sistem Digital",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 16,
+      "kode_mk": "MK207",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-102",
+      "label_mk": "Pendidikan Kewarganegaraan",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 17,
+      "kode_mk": "MK301",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-103",
+      "label_mk": "Analisis Algoritma",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 18,
+      "kode_mk": "MK302",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-103",
+      "label_mk": "Rekayasa Perangkat Lunak",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 19,
+      "kode_mk": "MK303",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-103",
+      "label_mk": "Jaringan Komputer",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 20,
+      "kode_mk": "MK304",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-103",
+      "label_mk": "Sistem Operasi",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 21,
+      "kode_mk": "MK305",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-103",
+      "label_mk": "Basis Data Lanjut",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 22,
+      "kode_mk": "MK306",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-103",
+      "label_mk": "Statistika dan Probabilitas",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 23,
+      "kode_mk": "MK307",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-103",
+      "label_mk": "Interaksi Manusia dan Komputer",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 24,
+      "kode_mk": "MK401",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-104",
+      "label_mk": "Pemrograman Web",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 25,
+      "kode_mk": "MK402",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-104",
+      "label_mk": "Analisis dan Perancangan Sistem",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 26,
+      "kode_mk": "MK403",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-104",
+      "label_mk": "Kecerdasan Buatan",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 27,
+      "kode_mk": "MK404",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-104",
+      "label_mk": "Arsitektur dan Organisasi Komputer",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 28,
+      "kode_mk": "MK405",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-104",
+      "label_mk": "Pemrograman Mobile",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 29,
+      "kode_mk": "MK406",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-104",
+      "label_mk": "Keamanan Informasi",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 30,
+      "kode_mk": "MK407",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-104",
+      "label_mk": "Metodologi Penelitian",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 31,
+      "kode_mk": "MK501",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-105",
+      "label_mk": "Pemrograman Web Lanjut",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 32,
+      "kode_mk": "MK502",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-105",
+      "label_mk": "Data Mining",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 33,
+      "kode_mk": "MK503",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-105",
+      "label_mk": "Manajemen Proyek TI",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 34,
+      "kode_mk": "MK504",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-105",
+      "label_mk": "Pembelajaran Mesin",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 35,
+      "kode_mk": "MK505",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-105",
+      "label_mk": "Komputasi Awan",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 36,
+      "kode_mk": "MK506",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-105",
+      "label_mk": "Pengujian Perangkat Lunak",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 37,
+      "kode_mk": "MK507",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-105",
+      "label_mk": "Etika Profesi",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 38,
+      "kode_mk": "MK601",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-106",
+      "label_mk": "Sistem Informasi Enterprise",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 39,
+      "kode_mk": "MK602",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-106",
+      "label_mk": "Big Data",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 40,
+      "kode_mk": "MK603",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-106",
+      "label_mk": "Internet of Things",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 41,
+      "kode_mk": "MK604",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-106",
+      "label_mk": "Pengolahan Citra Digital",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 42,
+      "kode_mk": "MK605",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-106",
+      "label_mk": "Tata Kelola TI",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 43,
+      "kode_mk": "MK606",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-106",
+      "label_mk": "Kewirausahaan",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 44,
+      "kode_mk": "MK607",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-106",
+      "label_mk": "Kerja Praktik",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 45,
+      "kode_mk": "MK701",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-107",
+      "label_mk": "Seminar Proposal Skripsi",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 46,
+      "kode_mk": "MK702",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-107",
+      "label_mk": "Kuliah Kerja Nyata",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 47,
+      "kode_mk": "MK703",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-107",
+      "label_mk": "Mata Kuliah Pilihan I",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 48,
+      "kode_mk": "MK704",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-107",
+      "label_mk": "Mata Kuliah Pilihan II",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 49,
+      "kode_mk": "MK705",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-107",
+      "label_mk": "Data Warehouse",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 50,
+      "kode_mk": "MK706",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-107",
+      "label_mk": "Audit Sistem Informasi",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 51,
+      "kode_mk": "MK801",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-108",
+      "label_mk": "Skripsi",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    },
+    {
+      "id_kelas": 52,
+      "kode_mk": "MK802",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-108",
+      "label_mk": "Seminar Hasil Skripsi",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 53,
+      "kode_mk": "MK803",
+      "id_periode": "G2627",
+      "id_dosen": 3,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R-108",
+      "label_mk": "Mata Kuliah Pilihan III",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Sulista Endah"
+    },
+    {
+      "id_kelas": 2,
+      "kode_mk": "SI102",
+      "id_periode": "G2627",
+      "id_dosen": 2,
+      "nama_kelas": "A",
+      "kuota": 35,
+      "ruangan": "R102",
+      "label_mk": "Basis Data",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Siti Rahmawati"
+    },
+    {
+      "id_kelas": 1,
+      "kode_mk": "SI101",
+      "id_periode": "G2627",
+      "id_dosen": 1,
+      "nama_kelas": "A",
+      "kuota": 40,
+      "ruangan": "R101",
+      "label_mk": "Algoritma dan Pemrograman",
+      "label_periode": "Ganjil 2026/2027",
+      "label_dosen": "Budi Santoso"
+    }
+  ],
+  "krs": [
+    {
+      "id_krs": 3,
+      "nim": "21223456",
+      "id_periode": "G2627",
+      "kode_aturan": "SKS_MAX",
+      "tgl_isi": "2026-10-29T17:00:00.000Z",
+      "status": "diajukan",
+      "label_mahasiswa": "sean",
+      "label_periode": "Ganjil 2026/2027"
+    },
+    {
+      "id_krs": 4,
+      "nim": "21223457",
+      "id_periode": "G2627",
+      "kode_aturan": "SKS_MAX",
+      "tgl_isi": "2026-10-27T17:00:00.000Z",
+      "status": "disetujui",
+      "label_mahasiswa": "keonu",
+      "label_periode": "Ganjil 2026/2027"
+    },
+    {
+      "id_krs": 5,
+      "nim": "21223459",
+      "id_periode": "G2627",
+      "kode_aturan": "SKS_MAX",
+      "tgl_isi": "2026-10-25T17:00:00.000Z",
+      "status": "diajukan",
+      "label_mahasiswa": "james",
+      "label_periode": "Ganjil 2026/2027"
+    }
+  ],
+  "krs_detail": [
+    {
+      "id_krs": 3,
+      "id_kelas": 4,
+      "nilai_huruf": null,
+      "nim": "21223456",
+      "label_mahasiswa": "sean",
+      "label_mk": "Pendidikan Agama",
+      "label_kelas": "A",
+      "label_sks": 2
+    },
+    {
+      "id_krs": 4,
+      "id_kelas": 4,
+      "nilai_huruf": null,
+      "nim": "21223457",
+      "label_mahasiswa": "keonu",
+      "label_mk": "Pendidikan Agama",
+      "label_kelas": "A",
+      "label_sks": 2
+    },
+    {
+      "id_krs": 5,
+      "id_kelas": 4,
+      "nilai_huruf": null,
+      "nim": "21223459",
+      "label_mahasiswa": "james",
+      "label_mk": "Pendidikan Agama",
+      "label_kelas": "A",
+      "label_sks": 2
+    },
+    {
+      "id_krs": 3,
+      "id_kelas": 6,
+      "nilai_huruf": null,
+      "nim": "21223456",
+      "label_mahasiswa": "sean",
+      "label_mk": "Bahasa Indonesia",
+      "label_kelas": "A",
+      "label_sks": 2
+    },
+    {
+      "id_krs": 5,
+      "id_kelas": 6,
+      "nilai_huruf": null,
+      "nim": "21223459",
+      "label_mahasiswa": "james",
+      "label_mk": "Bahasa Indonesia",
+      "label_kelas": "A",
+      "label_sks": 2
+    },
+    {
+      "id_krs": 3,
+      "id_kelas": 8,
+      "nilai_huruf": null,
+      "nim": "21223456",
+      "label_mahasiswa": "sean",
+      "label_mk": "Kalkulus",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 4,
+      "id_kelas": 8,
+      "nilai_huruf": null,
+      "nim": "21223457",
+      "label_mahasiswa": "keonu",
+      "label_mk": "Kalkulus",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 5,
+      "id_kelas": 8,
+      "nilai_huruf": null,
+      "nim": "21223459",
+      "label_mahasiswa": "james",
+      "label_mk": "Kalkulus",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 3,
+      "id_kelas": 9,
+      "nilai_huruf": null,
+      "nim": "21223456",
+      "label_mahasiswa": "sean",
+      "label_mk": "Pengantar Teknologi Informasi",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 4,
+      "id_kelas": 9,
+      "nilai_huruf": null,
+      "nim": "21223457",
+      "label_mahasiswa": "keonu",
+      "label_mk": "Pengantar Teknologi Informasi",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 5,
+      "id_kelas": 9,
+      "nilai_huruf": null,
+      "nim": "21223459",
+      "label_mahasiswa": "james",
+      "label_mk": "Pengantar Teknologi Informasi",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 3,
+      "id_kelas": 10,
+      "nilai_huruf": null,
+      "nim": "21223456",
+      "label_mahasiswa": "sean",
+      "label_mk": "Logika Informatika",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 4,
+      "id_kelas": 10,
+      "nilai_huruf": null,
+      "nim": "21223457",
+      "label_mahasiswa": "keonu",
+      "label_mk": "Logika Informatika",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 5,
+      "id_kelas": 10,
+      "nilai_huruf": null,
+      "nim": "21223459",
+      "label_mahasiswa": "james",
+      "label_mk": "Logika Informatika",
+      "label_kelas": "A",
+      "label_sks": 3
+    },
+    {
+      "id_krs": 4,
+      "id_kelas": 6,
+      "nilai_huruf": "A",
+      "nim": "21223457",
+      "label_mahasiswa": "keonu",
+      "label_mk": "Bahasa Indonesia",
+      "label_kelas": "A",
+      "label_sks": 2
+    }
+  ],
+  "aturan_akademik": [
+    {
+      "kode_aturan": "SKS_MAX",
+      "nilai": 24,
+      "keterangan": "Maksimal 24 SKS per periode"
+    }
+  ]
+}

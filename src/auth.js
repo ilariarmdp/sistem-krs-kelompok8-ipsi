@@ -51,7 +51,7 @@ router.post('/login', async (req, res) => {
 
     res.json(req.session.user);
   } catch (e) {
-    console.error(e);
+    console.error('Login:', e);
     res.status(500).json({
       error: 'Terjadi kesalahan server'
     });
@@ -138,7 +138,7 @@ router.post('/change-password', async (req, res) => {
       message: 'Password berhasil diubah'
     });
   } catch (e) {
-    console.error(e);
+    console.error('Ubah password:', e);
     res.status(500).json({
       error: 'Terjadi kesalahan server'
     });
