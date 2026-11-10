@@ -43,7 +43,7 @@ app.use(auth.requirePage);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Mengambil ref (NIM / id_dosen) dari sesi.
-const refOf = (user) => user.ref ?? user.ref_id;
+const ambilRefPengguna = (user) => user.ref ?? user.ref_id;
 
 // Metadata tabel.
 const tables = {
@@ -344,7 +344,7 @@ app.get('/api/stats', async (req, res) => {
   try {
     const user = req.session.user;
     const role = user.role;
-    const ref = refOf(user);
+    const ref = ambilRefPengguna(user);
 
     if (role === 'mahasiswa') {
       const { rows } = await pool.query(`
@@ -646,7 +646,7 @@ app.post('/api/krs/:idKrs/ajukan', async (req, res) => {
   }
 
   const idKrs = Number(req.params.idKrs);
-  const nim = refOf(user);
+  const nim = ambilRefPengguna(user);
 
   if (!Number.isInteger(idKrs) || idKrs <= 0) {
     return res.status(400).json({ error: 'ID KRS tidak valid' });
@@ -690,7 +690,7 @@ app.put('/api/krs/:idKrs/persetujuan', async (req, res) => {
   }
 
   const idKrs = Number(req.params.idKrs);
-  const idDosen = Number(refOf(user));
+  const idDosen = Number(ambilRefPengguna(user));
   const status = String(req.body?.status ?? '').toLowerCase();
 
   if (
@@ -741,7 +741,7 @@ app.put('/api/krs-detail/:idKrs/:idKelas/nilai', async (req, res) => {
     });
   }
 
-  const idDosen = Number(refOf(user));
+  const idDosen = Number(ambilRefPengguna(user));
   const idKrs = Number(req.params.idKrs);
   const idKelas = Number(req.params.idKelas);
   const nilai = String(req.body?.nilai_huruf ?? '').trim().toUpperCase();
