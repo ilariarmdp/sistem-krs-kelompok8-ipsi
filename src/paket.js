@@ -21,8 +21,21 @@ class ErrorAturan extends Error {
   }
 }
 
-const fail = (res, e) =>
-  res.status(400).json({ error: e.detail || e.message });
+// Error aturan bisnis dijawab 400 dengan pesan aslinya. Error lain (database, bug)
+// dicatat di log dan klien hanya menerima pesan umum, tanpa detail isi data.
+const fail = (res, e) => {
+  if (e instanceof ErrorAturan) {
+    return res.status(400).json({ error: e.message });
+  }
+
+  console.error('Paket KRS:', e.code || '-', e.message);
+
+  if (e.code === '23503' || e.code === '23505') {
+    return res.status(409).json({ error: 'Data bentrok dengan data lain yang sudah ada atau masih dipakai' });
+  }
+
+  return res.status(500).json({ error: 'Terjadi kesalahan server' });
+};
 
 // Periode terbaru (berdasarkan tanggal mulai).
 async function latestPeriode(client = pool) {
