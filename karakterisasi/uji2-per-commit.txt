@@ -14,3 +14,6 @@ d3f87a8  Ringkasan: 18 LULUS dari 18 skenario  | refactor: pindahkan aturan bata
 5ec3ae4  Ringkasan: 18 LULUS dari 18 skenario  | refactor: hapus pendaftaran middleware dobel di server.js
 aadb329  Ringkasan: 18 LULUS dari 18 skenario  | test: simpan hasil 18 skenario pada baseline dan tiap commit refactoring
 ff370c3  Ringkasan: 18 LULUS dari 18 skenario  | refactor: pindahkan latestPeriode dari paket.js ke service/periode.js
+18beb48  Ringkasan: 18 LULUS dari 18 skenario  | test: catat hasil 18 skenario untuk commit aadb329 dan ff370c3
+2e4c504  Ringkasan: 18 LULUS dari 18 skenario  | refactor: hapus server copy.js yang tidak dipakai
+b02b84e  Ringkasan: 18 LULUS dari 18 skenario  | chore: hapus entri server copy.js dari ignore ESLint
