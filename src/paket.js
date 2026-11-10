@@ -13,6 +13,14 @@ const onlyRole = (...roles) => (req, res, next) =>
     ? next()
     : res.status(403).json({ error: 'Anda tidak memiliki akses ke fitur ini' });
 
+// Error aturan bisnis (input salah atau aturan dilanggar); pesannya aman ditampilkan ke pengguna.
+class ErrorAturan extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ErrorAturan';
+  }
+}
+
 const fail = (res, e) =>
   res.status(400).json({ error: e.detail || e.message });
 
@@ -106,12 +114,12 @@ router.post('/simpan', onlyRole('mahasiswa'), async (req, res) => {
         .map(Number).filter(Number.isInteger)
     )];
 
-    if (!ids.length) throw new Error('Pilih minimal satu mata kuliah');
+    if (!ids.length) throw new ErrorAturan('Pilih minimal satu mata kuliah');
 
     await client.query('BEGIN');
 
     const periode = await latestPeriode(client);
-    if (!periode) throw new Error('Belum ada periode akademik');
+    if (!periode) throw new ErrorAturan('Belum ada periode akademik');
 
     let krs = (await client.query(
       `SELECT * FROM krs WHERE nim = $1 AND id_periode = $2
@@ -120,7 +128,7 @@ router.post('/simpan', onlyRole('mahasiswa'), async (req, res) => {
     )).rows[0];
 
     if (krs && !['draft', 'ditolak'].includes(String(krs.status).toLowerCase())) {
-      throw new Error('KRS sudah diajukan atau disetujui, tidak bisa diubah');
+      throw new ErrorAturan('KRS sudah diajukan atau disetujui, tidak bisa diubah');
     }
 
     // Validasi kelas: harus ada dan berada di periode yang sama.
@@ -131,20 +139,20 @@ router.post('/simpan', onlyRole('mahasiswa'), async (req, res) => {
     `, [ids, periode.id_periode])).rows;
 
     if (kelas.length !== ids.length) {
-      throw new Error('Ada kelas yang tidak valid untuk periode ini');
+      throw new ErrorAturan('Ada kelas yang tidak valid untuk periode ini');
     }
 
     const total = kelas.reduce((sum, r) => sum + Number(r.sks), 0);
     const max = await maxSks(client);
 
     if (total > max) {
-      throw new Error(`Total SKS ${total} melebihi batas ${max} SKS`);
+      throw new ErrorAturan(`Total SKS ${total} melebihi batas ${max} SKS`);
     }
 
     // Buat KRS baru kalau belum ada.
     if (!krs) {
       const kode = await aturanKode(client);
-      if (!kode) throw new Error('Aturan akademik belum diisi oleh admin');
+      if (!kode) throw new ErrorAturan('Aturan akademik belum diisi oleh admin');
 
       krs = (await client.query(
         `INSERT INTO krs (nim, id_periode, kode_aturan, tgl_isi, status)
@@ -163,7 +171,7 @@ router.post('/simpan', onlyRole('mahasiswa'), async (req, res) => {
              WHERE kd.id_kelas = k.id_kelas AND kd.id_krs <> $2) >= k.kuota
     `, [ids, krs.id_krs]);
 
-    if (penuh.rowCount) throw new Error('Ada kelas yang kuotanya sudah penuh');
+    if (penuh.rowCount) throw new ErrorAturan('Ada kelas yang kuotanya sudah penuh');
 
     // Ganti isi detail KRS.
     await client.query('DELETE FROM krs_detail WHERE id_krs = $1', [krs.id_krs]);
@@ -202,12 +210,12 @@ router.post('/ajukan/:id', onlyRole('mahasiswa', 'admin'), async (req, res) => {
       'SELECT * FROM krs WHERE id_krs = $1 FOR UPDATE', [req.params.id]
     )).rows[0];
 
-    if (!krs) throw new Error('KRS tidak ditemukan');
+    if (!krs) throw new ErrorAturan('KRS tidak ditemukan');
     if (u.role === 'mahasiswa' && String(krs.nim) !== String(u.ref)) {
-      throw new Error('KRS ini bukan milik Anda');
+      throw new ErrorAturan('KRS ini bukan milik Anda');
     }
     if (String(krs.status).toLowerCase() !== 'draft') {
-      throw new Error('KRS hanya bisa diajukan saat berstatus draft');
+      throw new ErrorAturan('KRS hanya bisa diajukan saat berstatus draft');
     }
 
     const sum = (await client.query(`
@@ -218,10 +226,10 @@ router.post('/ajukan/:id', onlyRole('mahasiswa', 'admin'), async (req, res) => {
       WHERE kd.id_krs = $1
     `, [krs.id_krs])).rows[0];
 
-    if (!sum.jumlah) throw new Error('Pilih minimal satu mata kuliah sebelum mengajukan');
+    if (!sum.jumlah) throw new ErrorAturan('Pilih minimal satu mata kuliah sebelum mengajukan');
 
     const max = await maxSks(client);
-    if (sum.total > max) throw new Error(`Total SKS ${sum.total} melebihi batas ${max} SKS`);
+    if (sum.total > max) throw new ErrorAturan(`Total SKS ${sum.total} melebihi batas ${max} SKS`);
 
     await client.query("UPDATE krs SET status = 'Diajukan' WHERE id_krs = $1", [krs.id_krs]);
     await client.query('COMMIT');
@@ -244,7 +252,7 @@ router.put('/persetujuan/:id', onlyRole('dosen'), async (req, res) => {
   try {
     const status = String(req.body.status || '').toLowerCase();
     if (!['disetujui', 'ditolak'].includes(status)) {
-      throw new Error('Status harus disetujui atau ditolak');
+      throw new ErrorAturan('Status harus disetujui atau ditolak');
     }
 
     await client.query('BEGIN');
@@ -256,9 +264,9 @@ router.put('/persetujuan/:id', onlyRole('dosen'), async (req, res) => {
       FOR UPDATE OF k
     `, [req.params.id, Number(req.session.user.ref)])).rows[0];
 
-    if (!krs) throw new Error('KRS tidak ditemukan atau bukan mahasiswa bimbingan Anda');
+    if (!krs) throw new ErrorAturan('KRS tidak ditemukan atau bukan mahasiswa bimbingan Anda');
     if (String(krs.status).toLowerCase() !== 'diajukan') {
-      throw new Error('Hanya KRS berstatus diajukan yang dapat diproses');
+      throw new ErrorAturan('Hanya KRS berstatus diajukan yang dapat diproses');
     }
 
     await client.query(
@@ -365,11 +373,11 @@ router.get('/admin/krs/:id', onlyRole('admin'), async (req, res) => {
 // Simpan header KRS + ganti isi detail (dipakai tambah dan ubah).
 async function simpanKrsAdmin(client, id, b) {
   if (!b.nim || !b.id_periode) {
-    throw new Error('Mahasiswa dan periode wajib diisi');
+    throw new ErrorAturan('Mahasiswa dan periode wajib diisi');
   }
 
   const kode = b.kode_aturan || await aturanKode(client);
-  if (!kode) throw new Error('Aturan akademik belum diisi');
+  if (!kode) throw new ErrorAturan('Aturan akademik belum diisi');
 
   const ids = [...new Set(
     (Array.isArray(b.id_kelas) ? b.id_kelas : [])
@@ -383,7 +391,7 @@ async function simpanKrsAdmin(client, id, b) {
        AND ($3::int IS NULL OR id_krs <> $3::int)`,
     [b.nim, b.id_periode, id]
   );
-  if (dup.rowCount) throw new Error('Mahasiswa ini sudah punya KRS di periode tersebut');
+  if (dup.rowCount) throw new ErrorAturan('Mahasiswa ini sudah punya KRS di periode tersebut');
 
   // Kelas harus ada di periode yang sama + cek batas SKS.
   if (ids.length) {
@@ -394,12 +402,12 @@ async function simpanKrsAdmin(client, id, b) {
     `, [ids, b.id_periode])).rows;
 
     if (kelas.length !== ids.length) {
-      throw new Error('Ada kelas yang bukan dari periode yang dipilih');
+      throw new ErrorAturan('Ada kelas yang bukan dari periode yang dipilih');
     }
 
     const total = kelas.reduce((s, r) => s + Number(r.sks), 0);
     const max = await maxSks(client);
-    if (total > max) throw new Error(`Total SKS ${total} melebihi batas ${max} SKS`);
+    if (total > max) throw new ErrorAturan(`Total SKS ${total} melebihi batas ${max} SKS`);
   }
 
   let idKrs = id;
@@ -412,7 +420,7 @@ async function simpanKrsAdmin(client, id, b) {
        WHERE id_krs = $5 RETURNING id_krs`,
       [b.nim, b.id_periode, kode, b.tgl_isi || null, id]
     );
-    if (!u.rowCount) throw new Error('KRS tidak ditemukan');
+    if (!u.rowCount) throw new ErrorAturan('KRS tidak ditemukan');
   } else {
     // Tambah: ID boleh diisi manual, kalau kosong dibuat otomatis.
     let newId = null;
@@ -420,10 +428,10 @@ async function simpanKrsAdmin(client, id, b) {
     if (b.id_krs !== undefined && b.id_krs !== null && b.id_krs !== '') {
       newId = Number(b.id_krs);
       if (!Number.isInteger(newId) || newId <= 0) {
-        throw new Error('ID KRS harus berupa angka positif');
+        throw new ErrorAturan('ID KRS harus berupa angka positif');
       }
       const ada = await client.query('SELECT 1 FROM krs WHERE id_krs = $1', [newId]);
-      if (ada.rowCount) throw new Error(`ID KRS ${newId} sudah dipakai`);
+      if (ada.rowCount) throw new ErrorAturan(`ID KRS ${newId} sudah dipakai`);
     }
 
     const i = await client.query(
