@@ -36,12 +36,6 @@ app.use(auth.requirePage);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-app.use('/api/paket', require('./paket'));
-app.use('/api', access.guard);
-app.use(auth.requirePage);
-
-app.use(express.static(path.join(__dirname, '..', 'public')));
-
 // Mengambil ref (NIM / id_dosen) dari sesi.
 const ambilRefPengguna = (user) => user.ref ?? user.ref_id;
 
