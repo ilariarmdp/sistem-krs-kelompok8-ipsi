@@ -185,6 +185,13 @@ async function ambilSemuaBaris(table) {
   }));
 }
 
+// Membuat peta {kunci: nilai} dari daftar baris.
+function buatPetaLabel(rows, kolomKunci, kolomNilai) {
+  return Object.fromEntries(
+    rows.map(row => [row[kolomKunci], row[kolomNilai]])
+  );
+}
+
 // Menambahkan label relasi agar tampilan frontend mudah dibaca.
 async function withLabels(table, rows) {
   const [
@@ -205,41 +212,23 @@ async function withLabels(table, rows) {
     ambilSemuaBaris('krs')
   ]);
 
-    const prodiMap = Object.fromEntries(
-    prodi.map(row => [row.kode_prodi, row.nama_prodi])
-  );
+    const prodiMap = buatPetaLabel(prodi, 'kode_prodi', 'nama_prodi');
 
-  const dosenMap = Object.fromEntries(
-    dosen.map(row => [row.id_dosen, row.nama])
-  );
+  const dosenMap = buatPetaLabel(dosen, 'id_dosen', 'nama');
 
-  const mahasiswaMap = Object.fromEntries(
-    mahasiswa.map(row => [row.nim, row.nama])
-  );
+  const mahasiswaMap = buatPetaLabel(mahasiswa, 'nim', 'nama');
 
-  const mkMap = Object.fromEntries(
-    mk.map(row => [row.kode_mk, row.nama_mk])
-  );
+  const mkMap = buatPetaLabel(mk, 'kode_mk', 'nama_mk');
 
-  const periodeMap = Object.fromEntries(
-    periode.map(row => [row.id_periode, row.nama_periode])
-  );
+  const periodeMap = buatPetaLabel(periode, 'id_periode', 'nama_periode');
 
-  const kelasMap = Object.fromEntries(
-    kelas.map(row => [row.id_kelas, row.nama_kelas])
-  );
+  const kelasMap = buatPetaLabel(kelas, 'id_kelas', 'nama_kelas');
 
-  const krsMap = Object.fromEntries(
-    krs.map(row => [row.id_krs, row.nim])
-  );
+  const krsMap = buatPetaLabel(krs, 'id_krs', 'nim');
 
-  const kelasMkMap = Object.fromEntries(
-    kelas.map(row => [row.id_kelas, row.kode_mk])
-  );
+  const kelasMkMap = buatPetaLabel(kelas, 'id_kelas', 'kode_mk');
 
-  const sksMap = Object.fromEntries(
-    mk.map(row => [row.kode_mk, row.sks])
-  );
+  const sksMap = buatPetaLabel(mk, 'kode_mk', 'sks');
 
   return rows.map(row => {
     const result = { ...row };
