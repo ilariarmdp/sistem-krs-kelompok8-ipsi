@@ -266,11 +266,6 @@ async function withLabels(table, rows) {
   });
 }
 
-// Mengambil nilai primary key dari data.
-function getPk(table, row) {
-  return tables[table].pk.map(key => row[key]);
-}
-
 // Memeriksa apakah nilai wajib sudah diisi.
 function validateRequired(table, data) {
   const requiredFields = tables[table].fields
@@ -304,19 +299,6 @@ async function findByPk(table, values) {
   const { rows } = await pool.query(
     `SELECT * FROM ${table} WHERE ${where}`,
     values
-  );
-
-  return rows[0] || null;
-}
-
-// Mengubah status KRS.
-async function updateKrsStatus(idKrs, status) {
-  const { rows } = await pool.query(
-    `UPDATE krs
-     SET status = $1
-     WHERE id_krs = $2
-     RETURNING *`,
-    [statusUntukDatabase(status), idKrs]
   );
 
   return rows[0] || null;
