@@ -2,7 +2,7 @@
 
 module.exports = [
   {
-    ignores: ['node_modules/**', 'src/server copy.js', 'karakterisasi/**']
+    ignores: ['node_modules/**', 'karakterisasi/**']
   },
   js.configs.recommended,
   {
