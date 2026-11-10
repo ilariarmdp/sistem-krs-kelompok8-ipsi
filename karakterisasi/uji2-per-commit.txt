@@ -12,3 +12,5 @@ d79d59a  Ringkasan: 18 LULUS dari 18 skenario  | chore: pasang ESLint 9 dan simp
 1f76117  Ringkasan: 18 LULUS dari 18 skenario  | fix: jangan kirim detail error PostgreSQL ke klien, catat error database di log dengan konteks
 d3f87a8  Ringkasan: 18 LULUS dari 18 skenario  | refactor: pindahkan aturan batas SKS ke src/service/aturanAkademik.js dan ganti angka ajaib dengan konstanta
 5ec3ae4  Ringkasan: 18 LULUS dari 18 skenario  | refactor: hapus pendaftaran middleware dobel di server.js
+aadb329  Ringkasan: 18 LULUS dari 18 skenario  | test: simpan hasil 18 skenario pada baseline dan tiap commit refactoring
+ff370c3  Ringkasan: 18 LULUS dari 18 skenario  | refactor: pindahkan latestPeriode dari paket.js ke service/periode.js
