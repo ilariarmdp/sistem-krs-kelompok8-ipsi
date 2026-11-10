@@ -5,6 +5,7 @@
 // =====================================================================
 const express = require('express');
 const pool = require('./db');
+const { maxSks, aturanKode } = require('./service/aturanAkademik');
 
 const router = express.Router();
 
@@ -43,28 +44,6 @@ async function latestPeriode(client = pool) {
     'SELECT id_periode, nama_periode FROM periode ORDER BY tgl_mulai DESC LIMIT 1'
   );
   return r.rows[0] || null;
-}
-
-// Batas SKS dari tabel aturan_akademik (default 24).
-async function maxSks(client = pool) {
-  const r = await client.query(`
-    SELECT nilai FROM aturan_akademik
-    WHERE kode_aturan IN ('MAX_SKS', 'SKS_MAX')
-       OR upper(coalesce(keterangan, '')) IN ('MAX_SKS', 'SKS_MAX')
-    ORDER BY (kode_aturan IN ('MAX_SKS', 'SKS_MAX')) DESC
-    LIMIT 1
-  `);
-  return Number(r.rows[0]?.nilai ?? 24);
-}
-
-// Kode aturan yang dipakai saat KRS dibuat otomatis.
-async function aturanKode(client = pool) {
-  const r = await client.query(`
-    SELECT kode_aturan FROM aturan_akademik
-    ORDER BY (kode_aturan IN ('MAX_SKS', 'SKS_MAX')) DESC, kode_aturan
-    LIMIT 1
-  `);
-  return r.rows[0]?.kode_aturan || null;
 }
 
 // ---------------------------------------------------------------------
