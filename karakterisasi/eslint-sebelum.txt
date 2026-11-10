@@ -1,0 +1,7 @@
+
+src\server.js
+  281:10  error  'getPk' is defined but never used            no-unused-vars
+  324:16  error  'updateKrsStatus' is defined but never used  no-unused-vars
+
+✖ 2 problems (2 errors, 0 warnings)
+
