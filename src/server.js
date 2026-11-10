@@ -45,6 +45,9 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Mengambil ref (NIM / id_dosen) dari sesi.
 const ambilRefPengguna = (user) => user.ref ?? user.ref_id;
 
+// Daftar nilai huruf yang diizinkan (kosong = belum dinilai).
+const DAFTAR_NILAI_HURUF = ['', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'E'];
+
 // Metadata tabel.
 const tables = {
   prodi: {
@@ -139,7 +142,7 @@ const tables = {
     fields: [
       ['id_krs', 'KRS', 'fk', true, 'krs', 'id_krs', 'id_krs'],
       ['id_kelas', 'Kelas', 'fk', true, 'kelas', 'id_kelas', 'id_kelas'],
-      ['nilai_huruf', 'Nilai Huruf', 'select', false, ['', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'E']]
+      ['nilai_huruf', 'Nilai Huruf', 'select', false, DAFTAR_NILAI_HURUF]
     ]
   },
 
@@ -716,7 +719,7 @@ app.put('/api/krs-detail/:idKrs/:idKelas/nilai', async (req, res) => {
   const idKrs = Number(req.params.idKrs);
   const idKelas = Number(req.params.idKelas);
   const nilai = String(req.body?.nilai_huruf ?? '').trim().toUpperCase();
-  const nilaiValid = ['', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D', 'E'];
+  const nilaiValid = DAFTAR_NILAI_HURUF;
 
   if (
     !Number.isInteger(idKrs) ||
